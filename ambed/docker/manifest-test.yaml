@@ -1,0 +1,11 @@
+image: cbodden/ambed-docker:test
+manifests:
+  - image: cbodden/ambed-docker:test-amd64
+    platform:
+      architecture: amd64
+      os: linux
+
+  - image: cbodden/ambed-docker:test-arm64
+    platform:
+      architecture: arm64
+      os: linux

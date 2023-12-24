@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  ambed:
+    container_name: ambed
+    hostname: ambed
+    image: cbodden/ambed-docker:latest-arm64
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - 10100:10100/udp
+      - 10101-10199:10101-10199/udp

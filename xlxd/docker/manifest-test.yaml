@@ -1,0 +1,11 @@
+image: cbodden/xlxd-docker:test
+manifests:
+  - image: cbodden/xlxd-docker:test-amd64
+    platform:
+      architecture: amd64
+      os: linux
+
+  - image: cbodden/xlxd-docker:test-arm64
+    platform:
+      architecture: arm64
+      os: linux
