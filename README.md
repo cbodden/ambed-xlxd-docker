@@ -7,14 +7,14 @@ XLXd
 
 | Image Tag             | Architectures           | Base Image         |
 | :-------------------- | :-----------------------| :----------------- |
-| [latest](https://hub.docker.com/r/cbodden/xlxd-docker), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
+| [latest](https://hub.docker.com/r/cbodden/xlxd-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
 
 
 ambed
 
 | Image Tag             | Architectures           | Base Image         |
 | :-------------------- | :-----------------------| :----------------- |
-| [latest](https://hub.docker.com/r/cbodden/ambed-docker), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
+| [latest](https://hub.docker.com/r/cbodden/ambed-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
 
 
 
