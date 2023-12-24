@@ -4,7 +4,7 @@ services:
   ambed:
     container_name: ambed
     hostname: ambed
-    image: cbodden/ambed-docker:latest-arm64
+    image: cbodden/ambed-docker:latest
     restart: unless-stopped
     privileged: true
     ports:
