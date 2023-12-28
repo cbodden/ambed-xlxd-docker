@@ -16,7 +16,30 @@ ambed
 | :-------------------- | :-----------------------| :----------------- |
 | [latest](https://hub.docker.com/r/cbodden/ambed-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
 
+FTDI testing done with 2 x DVSI AMBE3000 && 1 x DVMEGA DVstick 33 :
+```
+Starting AMBEd 1.3.5
 
+Initializing vocodecs:
+s6-rc: info: service legacy-services successfully started
+Detected 3 USB-FTDI devices
+
+Description : ThumbDV	 Serial : D30CDTY5
+Description : ThumbDV	 Serial : D30CBZH8
+Description : FT230X Basic UART	 Serial : DK0EN6FB
+
+Opening ThumbDV:D30CDTY5 device
+ReadDeviceVersion : AMBE3000R V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
+
+Opening ThumbDV:D30CBZH8 device
+ReadDeviceVersion : AMBE3000R V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
+
+Codec interfaces initialized successfully : 2 channels available
+
+Initializing controller
+
+AMBEd started and listening on 172.31.0.2
+```
 
 ## General
 
