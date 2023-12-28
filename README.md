@@ -16,7 +16,9 @@ ambed
 | :-------------------- | :-----------------------| :----------------- |
 | [latest](https://hub.docker.com/r/cbodden/ambed-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
 
-FTDI testing done with 2 x DVSI AMBE3000 && 1 x DVMEGA DVstick 33 :
+FTDI testing done with:
+- 2 x DVSI AMBE3000
+- 1 x DVMEGA DVstick 33
 ```
 Starting AMBEd 1.3.5
 
