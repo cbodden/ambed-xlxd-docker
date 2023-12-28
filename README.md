@@ -47,12 +47,14 @@ AMBEd started and listening on 172.31.0.2
 ## General
 
 ### YSF
+
 Autolink enabled: 1
 Autolink module:  A
 port:             42000
 Default RX/TX:    438.000.000
 
 ### Versions
+
 AMBEd:      1.2.5
 XLXd:       2.5.3
 FTDI:       1.4.27
