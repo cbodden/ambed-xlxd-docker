@@ -17,7 +17,9 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
     apt install -y \
         build-essential \
         curl \
+        kmod \
         lsof \
+        sudo \
         wget
 
 RUN mkdir -p \
