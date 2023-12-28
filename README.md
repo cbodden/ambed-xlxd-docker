@@ -1,18 +1,18 @@
-# ambed / XLXd docker images
+# AMBEd / XLXd docker images
 
 
 ## Compatability
 
 XLXd
 
-| Image Tag             | Architectures           | Base Image         |
+| Image Tags            | Architectures           | Base Image         |
 | :-------------------- | :-----------------------| :----------------- |
 | [latest](https://hub.docker.com/r/cbodden/xlxd-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
 
 
 ambed
 
-| Image Tag             | Architectures           | Base Image         |
+| Image Tags            | Architectures           | Base Image         |
 | :-------------------- | :-----------------------| :----------------- |
 | [latest](https://hub.docker.com/r/cbodden/ambed-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
 
@@ -48,16 +48,16 @@ AMBEd started and listening on 172.31.0.2
 
 ### YSF
 - Autolink enabled: 1
-- Autolink module:  A
-- port:             42000
-- Default RX/TX:    438.000.000
+- Autolink module: A
+- port: 42000
+- Default RX/TX freq: 438.000.000
 
 ### Versions
-- AMBEd:      1.2.5
-- XLXd:       2.5.3
-- FTDI:       1.4.27
+- AMBEd: 1.2.5
+- XLXd: 2.5.3
+- FTDI: 1.4.27
 - S6 Overlay: 3.1.6.2 
-- Ubuntu:     Latest
+- Ubuntu: Latest
 
 
 ## Usage
@@ -67,9 +67,10 @@ AMBEd started and listening on 172.31.0.2
 
 Copyright (C) 2016 Jean-Luc Deltombe LX3JL and Luc Engelmann LX1IQ
 
-Copyright (C) 2023 mfiscus project originally forked from  https://github.com/mfiscus
-
 Copyright (C) 2023 cbodden
+
+Copyright (C) 2023 mfiscus
+- originally forked from  https://github.com/mfiscus
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
