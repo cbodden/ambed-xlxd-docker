@@ -54,7 +54,7 @@ sed -i "s/Daemon=1/Daemon=0/g" /YSFReflector/YSFReflector.ini
 sed -i "s/Description=.*/Description=${DESCRIPTION}/g" /YSFReflector/YSFReflector.ini
 sed -i "s/# Id=5 digits only/ID=${ID}/g" /YSFReflector/YSFReflector.ini
 sed -i "s/Name=.*/Name=${NAME}/g" /YSFReflector/YSFReflector.ini
-sed -i "s/Port=.*/Port=${PORT}/g" /YSFReflector/YSFReflector.ini
+sed -i "s/Port=.*/Port=42000/g" /YSFReflector/YSFReflector.ini
 
 touch /.firstRunComplete
 echo "YSFReflector first run setup complete"
