@@ -3,6 +3,13 @@
 
 ## Compatability
 
+
+| Services        | Image Tags            | Architectures           | Base Image         |
+| :-------------- | :-------------------- | :-----------------------| :----------------- |
+| XLXd            | [latest](https://hub.docker.com/r/cbodden/xlxd-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
+| YSFReflector    | [latest](https://hub.docker.com/r/cbodden/xlxd-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
+
+
 AMBEd
 
 | Image Tags            | Architectures           | Base Image         |
@@ -35,20 +42,6 @@ Initializing controller
 
 AMBEd started and listening on 172.31.0.2
 ```
-
-
-XLXd
-
-| Image Tags            | Architectures           | Base Image         |
-| :-------------------- | :-----------------------| :----------------- |
-| [latest](https://hub.docker.com/r/cbodden/xlxd-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
-
-
-YSFReflector
-
-| Image Tags            | Architectures           | Base Image         |
-| :-------------------- | :-----------------------| :----------------- |
-| [latest](https://hub.docker.com/r/cbodden/ysfreflector-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
 
 
 ## General
