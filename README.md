@@ -1,16 +1,9 @@
-# AMBEd / XLXd docker images
+# AMBEd / XLXd / YSFReflector docker images
 
 
 ## Compatability
 
-XLXd
-
-| Image Tags            | Architectures           | Base Image         |
-| :-------------------- | :-----------------------| :----------------- |
-| [latest](https://hub.docker.com/r/cbodden/xlxd-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
-
-
-ambed
+AMBEd
 
 | Image Tags            | Architectures           | Base Image         |
 | :-------------------- | :-----------------------| :----------------- |
@@ -44,9 +37,23 @@ AMBEd started and listening on 172.31.0.2
 ```
 
 
+XLXd
+
+| Image Tags            | Architectures           | Base Image         |
+| :-------------------- | :-----------------------| :----------------- |
+| [latest](https://hub.docker.com/r/cbodden/xlxd-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
+
+
+YSFReflector
+
+| Image Tags            | Architectures           | Base Image         |
+| :-------------------- | :-----------------------| :----------------- |
+| [latest](https://hub.docker.com/r/cbodden/ysfreflector-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
+
+
 ## General
 
-### YSF
+### XLXd YSF Default Settings 
 - Autolink enabled: 1
 - Autolink module: A
 - port: 42000
@@ -58,6 +65,7 @@ AMBEd started and listening on 172.31.0.2
 - FTDI: 1.4.27
 - S6 Overlay: 3.1.6.2 
 - Ubuntu: Latest
+- YSFReflector: 20210824
 
 
 ## Usage
