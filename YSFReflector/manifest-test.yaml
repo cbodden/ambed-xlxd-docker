@@ -1,0 +1,11 @@
+image: cbodden/ysfreflector-docker:test
+manifests:
+  - image: cbodden/ysfreflector-docker:test-amd64
+    platform:
+      architecture: amd64
+      os: linux
+
+  - image: cbodden/ysfreflector-docker:test-arm64
+    platform:
+      architecture: arm64
+      os: linux
