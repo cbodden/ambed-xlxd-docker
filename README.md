@@ -3,13 +3,15 @@
 
 ## Compatability
 
-AMBEd
 
-| Image Tags            | Architectures           | Base Image         |
-| :-------------------- | :-----------------------| :----------------- |
-| [latest](https://hub.docker.com/r/cbodden/ambed-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
+| Services        | Image Tags            | Architectures           | Base Image         |
+| :-------------- | :-------------------- | :-----------------------| :----------------- |
+| AMBEd           | [latest](https://hub.docker.com/r/cbodden/ambed-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
+| XLXd            | [latest](https://hub.docker.com/r/cbodden/xlxd-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
+| YSFReflector    | [latest](https://hub.docker.com/r/cbodden/ysfreflector-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
 
-FTDI testing done with:
+
+AMBEd FTDI testing done with:
 - 2 x DVSI AMBE3000
 - 1 x DVMEGA DVstick 33
 ```
@@ -37,33 +39,22 @@ AMBEd started and listening on 172.31.0.2
 ```
 
 
-XLXd
-
-| Image Tags            | Architectures           | Base Image         |
-| :-------------------- | :-----------------------| :----------------- |
-| [latest](https://hub.docker.com/r/cbodden/xlxd-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
-
-
-YSFReflector
-
-| Image Tags            | Architectures           | Base Image         |
-| :-------------------- | :-----------------------| :----------------- |
-| [latest](https://hub.docker.com/r/cbodden/ysfreflector-docker/tags), test          | x86_64, ARM64/v8        | Ubuntu Latest      |
-
-
 ## General
 
-### XLXd YSF Default Settings 
+### XLXd YSF Default Settings
 - Autolink enabled: 1
 - Autolink module: A
 - port: 42000
 - Default RX/TX freq: 438.000.000
 
+### YSFReflector Defaul Settings
+- port: 42000
+
 ### Versions
 - AMBEd: 1.2.5
 - XLXd: 2.5.3
 - FTDI: 1.4.27
-- S6 Overlay: 3.1.6.2 
+- S6 Overlay: 3.1.6.2
 - Ubuntu: Latest
 - YSFReflector: 20210824
 

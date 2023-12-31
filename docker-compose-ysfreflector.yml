@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  YSFReflector:
+    container_name: YSFReflector
+    hostname: YSFReflector
+    image: cbodden/ysfreflector-docker:latest
+    restart: unless-stopped
+    environment:
+      DESCRIPTION: 'My YSF Reflector' ## max 14 characters
+      ID: 'XXXXX'                     ## get id from https://register.ysfreflector.de/
+      NAME: 'My YSF Name'             ## max 16 characters
+    ports:
+      - 42000:42000/udp
