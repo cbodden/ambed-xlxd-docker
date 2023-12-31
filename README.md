@@ -47,8 +47,9 @@ AMBEd started and listening on 172.31.0.2
 - port: 42000
 - Default RX/TX freq: 438.000.000
 
-### YSFReflector Defaul Settings
+### YSFReflector Default Settings
 - port: 42000
+- port: 80 (for the ysf dashboard)
 
 ### Versions
 - AMBEd: 1.2.5
@@ -57,6 +58,7 @@ AMBEd started and listening on 172.31.0.2
 - S6 Overlay: 3.1.6.2
 - Ubuntu: Latest
 - YSFReflector: 20210824
+- YSFReflector-Dashboard: 20210331-2
 
 
 ## Usage
