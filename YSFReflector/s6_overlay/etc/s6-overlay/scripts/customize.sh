@@ -41,12 +41,6 @@ then
     exit 1
 fi
 
-if [ "${PORT}" == "PORT" ]
-then
-    echo "Please set PORT variable (range 42000-42010)"
-    exit 1
-fi
-
 # disable daemon
 sed -i "s/Daemon=1/Daemon=0/g" /YSFReflector/YSFReflector.ini
 
@@ -55,6 +49,52 @@ sed -i "s/Description=.*/Description=${DESCRIPTION}/g" /YSFReflector/YSFReflecto
 sed -i "s/# Id=5 digits only/ID=${ID}/g" /YSFReflector/YSFReflector.ini
 sed -i "s/Name=.*/Name=${NAME}/g" /YSFReflector/YSFReflector.ini
 sed -i "s/Port=.*/Port=42000/g" /YSFReflector/YSFReflector.ini
+
+# logging
+mkdir -p /YSFReflector/logs
+mkdir -p /var/www/html/config
+sed -i "s/FilePath=.*/FilePath=\/var\/log\//g" /YSFReflector/YSFReflector.ini
+
+# generate config.php
+cat << EOF > /var/www/html/config/config.php
+<?php
+date_default_timezone_set('UTC');
+define("YSFREFLECTORLOGPATH", "/var/log");
+define("YSFREFLECTORLOGPREFIX", "YSFReflector");
+define("YSFREFLECTORINIPATH", "/YSFReflector/");
+define("YSFREFLECTORINIFILENAME", "YSFReflector.ini");
+define("YSFREFLECTORPATH", "/YSFReflector/");
+define("TIMEZONE", "UTC");
+define("LOGO", "");
+define("REFRESHAFTER", "60");
+define("SHOWPROGRESSBARS", "on");
+define("SHOWOLDMHEARD", "60");
+define("TEMPERATUREHIGHLEVEL", "60");
+define("SHOWQRZ", "on");
+?>
+EOF
+
+# make sure www is owned by www
+chown -R www-data:www-data /var/www/html
+chmod -R 775 /var/www/html
+
+# generate virtual host
+cat << EOF > /etc/apache2/sites-available/${URL}.conf
+<VirtualHost *:${WEB_PORT}>
+    ServerName ${URL}
+    DocumentRoot /var/www/html
+</VirtualHost>
+EOF
+
+# Configure httpd
+echo "Listen ${WEB_PORT}" >/etc/apache2/ports.conf
+echo "ServerName ${URL}" >> /etc/apache2/apache2.conf
+
+# disable default site(s)
+a2dissite *default >/dev/null 2>&1
+
+# enable YSFDashboard dashboard
+a2ensite ${URL} >/dev/null 2>&1
 
 touch /.firstRunComplete
 echo "YSFReflector first run setup complete"
