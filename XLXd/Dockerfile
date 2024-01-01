@@ -33,14 +33,17 @@ RUN mkdir -p \
     ${XLXD_WEB_DIR} && \
     chown -R www-data:www-data ${XLXD_DIR}/
 
-RUN wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" -O "${S6_OVERLAY_INST}/s6-overlay-noarch.tar.xz" && \
+RUN wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" \
+        -O "${S6_OVERLAY_INST}/s6-overlay-noarch.tar.xz" && \
     tar -C / -Jxpf "${S6_OVERLAY_INST}/s6-overlay-noarch.tar.xz"
 
 RUN if [ "${TARGETARCH}" = "arm64" ]; then \
-        wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz" -O "${S6_OVERLAY_INST}/s6-overlay-aarch64.tar.xz" && \
+        wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz" \
+            -O "${S6_OVERLAY_INST}/s6-overlay-aarch64.tar.xz" && \
         tar -C / -Jxpf "${S6_OVERLAY_INST}/s6-overlay-aarch64.tar.xz"; \
     elif [ "${TARGETARCH}" = "amd64" ]; then \
-        wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz" -O "${S6_OVERLAY_INST}/s6-overlay-x86_64.tar.xz" && \
+        wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz" \
+            -O "${S6_OVERLAY_INST}/s6-overlay-x86_64.tar.xz" && \
         tar -C / -Jxpf "${S6_OVERLAY_INST}/s6-overlay-x86_64.tar.xz"; \
     else \
         echo "DANGER WILL ROBINSON. UNKNOWN TARGETARCH" && \
