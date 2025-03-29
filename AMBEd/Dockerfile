@@ -50,8 +50,8 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
         cp linux-arm-v8/libftd2xx.* /usr/local/lib && \
         chmod 0755 /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} && \
         ln -sf /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so && \
-        cp release/ftd2xx.h /usr/local/include && \
-        cp release/WinTypes.h /usr/local/include && \
+        cp linux-arm-v8/ftd2xx.h /usr/local/include && \
+        cp linux-arm-v8/WinTypes.h /usr/local/include && \
         ldconfig; \
     elif [ "${TARGETARCH}" = "amd64" ]; then \
         wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-x86_64-${FTDI_INST_VER}.tgz" -O "${FTDI_INST_DIR}/libftd2xx-x86_64-${FTDI_INST_VER}.tgz" && \
@@ -59,8 +59,8 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
         cp linux-x86_64/libftd2xx.* /usr/local/lib && \
         chmod 0755 /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} && \
         ln -sf /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so && \
-        cp release/ftd2xx.h /usr/local/include && \
-        cp release/WinTypes.h /usr/local/include && \
+        cp linux-x86_64/ftd2xx.h /usr/local/include && \
+        cp linux-x86_64/WinTypes.h /usr/local/include && \
         ldconfig; \
     else \
         echo "DANGER WILL ROBINSON. UNKNOWN TARGETARCH"; \
