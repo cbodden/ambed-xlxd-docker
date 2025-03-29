@@ -45,8 +45,8 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
 ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#master ${AMBED_INST_DIR}
 
 RUN if [ "${TARGETARCH}" = "arm64" ]; then \
-        wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-arm-v8-${FTDI_INST_VER}.tgz" -O "${FTDI_INST_DIR}/libftd2xx-linux-arm-v8-${FTDI_INST_VER}.tgz" && \
-        tar xfvz "${FTDI_INST_DIR}/libftd2xx-linux-arm-v8-${FTDI_INST_VER}.tgz" && \
+        wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-arm-v8-${FTDI_INST_VER}.tgz" -O "${FTDI_INST_DIR}/libftd2xx-arm-v8-${FTDI_INST_VER}.tgz" && \
+        tar xfvz "${FTDI_INST_DIR}/libftd2xx-arm-v8-${FTDI_INST_VER}.tgz" && \
         cp release/build/libftd2xx.* /usr/local/lib && \
         chmod 0755 /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} && \
         ln -sf /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so && \
@@ -54,8 +54,8 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
         cp release/WinTypes.h /usr/local/include && \
         ldconfig; \
     elif [ "${TARGETARCH}" = "amd64" ]; then \
-        wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-x86_64-${FTDI_INST_VER}.tgz" -O "${FTDI_INST_DIR}/libftd2xx-linux-x86_64-${FTDI_INST_VER}.tgz" && \
-        tar xfvz "${FTDI_INST_DIR}/libftd2xx-linux-x86_64-${FTDI_INST_VER}.tgz" && \
+        wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-x86_64-${FTDI_INST_VER}.tgz" -O "${FTDI_INST_DIR}/libftd2xx-x86_64-${FTDI_INST_VER}.tgz" && \
+        tar xfvz "${FTDI_INST_DIR}/libftd2xx-x86_64-${FTDI_INST_VER}.tgz" && \
         cp release/build/libftd2xx.* /usr/local/lib && \
         chmod 0755 /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} && \
         ln -sf /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so && \
