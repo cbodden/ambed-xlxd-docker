@@ -6,9 +6,9 @@ ENTRYPOINT ["/init"]
 ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8"
 ARG TARGETARCH
 ARG AMBED_DIR=/ambed AMBED_INST_DIR=/src/ambed USE_AGC=0
-ARG FTDI_INST_VER=1.4.27 FTDI_INST_DIR=/src/ftdi
-ARG FTDI_INST_ADDRESS=https://ftdichip.com/wp-content/uploads/2022/07
-ARG S6_OVERLAY_VERSION=3.2.0.0 S6_OVERLAY_INST=/src/S6
+ARG FTDI_INST_VER=1.4.33 FTDI_INST_DIR=/src/ftdi
+ARG FTDI_INST_ADDRESS=https://ftdichip.com/wp-content/uploads/2025/03
+ARG S6_OVERLAY_VERSION=3.2.0.2 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
