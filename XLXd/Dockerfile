@@ -11,7 +11,7 @@ ENV XLXCONFIG=/var/www/xlxd/pgs/config.inc.php
 ARG TARGETARCH
 ARG YSF_AUTOLINK_ENABLE=1 YSF_PORT=42000 YSF_AUTOLINK_MODULE="A"
 ARG YSF_DEFAULT_NODE_RX_FREQ=438000000 YSF_DEFAULT_NODE_TX_FREQ=438000000
-ARG S6_OVERLAY_VERSION=3.2.0.0 S6_OVERLAY_INST=/src/S6
+ARG S6_OVERLAY_VERSION=3.2.0.2 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
