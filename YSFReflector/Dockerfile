@@ -8,7 +8,7 @@ ENV DESCRIPTION="" ID="" NAME="" PORT="42000" URL="" WEB_PORT="80"
 ARG TARGETARCH
 ARG YSF_DIR=/YSFReflector YSF_INST_DIR=/src/ysf
 ARG YSF_DASH_INST_DIR=/src/YSFDashboard
-ARG S6_OVERLAY_VERSION=3.2.0.0 S6_OVERLAY_INST=/src/S6
+ARG S6_OVERLAY_VERSION=3.2.0.6 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
