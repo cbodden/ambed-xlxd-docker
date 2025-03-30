@@ -17,7 +17,8 @@ ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/do
 
 ##libapache2-mod-php \
 
-RUN apk update && \
+RUN --mount=type=cache,target=/var/cache/apk,sharing=locked \
+    apk update && \
     apk add --virtual build-dependencies && \
     apk add --update --no-cache \
         alpine-sdk build-base linux-headers \
