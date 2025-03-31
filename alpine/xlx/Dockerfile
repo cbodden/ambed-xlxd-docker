@@ -1,6 +1,7 @@
 ## xlx
 # syntax=docker/dockerfile:1-labs
-FROM --platform=$BUILDPLATFORM alpine:latest AS base
+FROM --platform=$BUILDPLATFORM alpine:latest
+##FROM --platform=$BUILDPLATFORM alpine:latest AS base
 
 ENTRYPOINT ["/init"]
 
@@ -33,6 +34,10 @@ RUN mkdir -p \
     ${XLXD_INST_DIR} \
     ${XLXD_WEB_DIR}
 
+######################################
+###### s6 overlay install begin ######
+######################################
+
 ## installing the s6_overlay noarch
 RUN wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" \
         -O "${S6_OVERLAY_INST}/s6-overlay-noarch.tar.xz" \
@@ -51,6 +56,10 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
         echo "DANGER WILL ROBINSON. UNKNOWN TARGETARCH" \
         && exit 1 ; \
     fi
+
+################################
+###### xlxd install begin ######
+################################
 
 ## pulling repo xlxd
 ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#master ${XLXD_INST_DIR}
@@ -75,17 +84,68 @@ RUN cd ${XLXD_INST_DIR}/src \
 ## copying the dashboard
 RUN cp -ivR ${XLXD_INST_DIR}/dashboard/* ${XLXD_WEB_DIR}/
 
-## copying the s6 overlay from the repo. Will change this in the future to generate from Dockerfile
+###############################
+###### s6 overlay config ######
+###############################
+
+## copying the s6 overlay from the repo
+## Will change this in the future to generate from Dockerfile
 COPY s6_overlay/ /
 
-## cleanup
+## Define xlxd as a long running s6 service
+COPY <<EOF /etc/s6-overlay/s6-rc.d/xlxd/type
+longrun
+EOF
+
+## Define entrypoint for xlxd && start in foreground
+COPY --chmod=700 <<EOF /etc/s6-overlay/s6-rc.d/xlxd/run
+#!/command/with-contenv sh
+
+PIDFILE="/var/log/xlxd.pid"
+XMLFILE="/var/log/xlxd.xml"
+IP=$( hostname -i )
+AMBED=ambed
+
+if [ -z ${XLXNUM:-} ]; then
+  echo "XLXNUM is not set"
+  exit 1
+fi
+
+# check for modified config files
+cp -p /config/*.* ${XLXD_DIR}
+
+# restore xml file to preserve historical data and allow dashboard to start immediately
+cp -p /config/log/xlxd.xml ${XMLFILE}
+
+# download the dmrid.dat from the XLXAPI server to the xlxd folder
+curl -L -s -o ${XLXD_DIR}/dmrid.dat http://xlxapi.rlx.lu/api/exportdmr.php
+
+# TODO: generate xlxd.interlink file
+
+# Create pid file for service uptime dashboard class
+touch ${PIDFILE}
+
+# start daemon
+exec /xlxd/xlxd ${XLXNUM} ${IP} ${AMBED}
+EOF
+
+## Register xlxd as a service for s6
+RUN touch /etc/s6-overlay/s6-rc.d/user/contents.d/xlxd
+
+#####################
+###### cleanup ######
+#####################
+
 RUN rm -rf /var/cache/apk/* \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/* \
     && rm -rf /var/tmp/* \
     && rm -rf /src
 
-## exposing needed ports
+############################
+###### exposing ports ######
+############################
+
 EXPOSE 80/tcp
 EXPOSE 8080/tcp
 EXPOSE 8880/udp
