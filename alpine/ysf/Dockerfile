@@ -67,7 +67,6 @@ RUN cp ${YSF_DASH_INST_DIR}/favicon.ico /var/www/html/ && \
 COPY s6_overlay/ /
 
 RUN rm -rf /var/cache/apk/* && \
-    rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/* && \
     rm -rf /var/tmp/* && \
     rm -rf /src
