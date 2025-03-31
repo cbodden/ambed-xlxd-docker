@@ -17,12 +17,12 @@ ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/do
 
 ## mounting a cache volume - then apk updates and adds
 RUN --mount=type=cache,target=/var/cache/apk,sharing=locked \
-    apk update && \
-    apk add --virtual build-dependencies && \
-    apk add --update --no-cache \
+    apk update \
+    && apk add --virtual build-dependencies \
+    && apk add --update --no-cache \
         alpine-sdk build-base linux-headers \
-        bash curl xz && \
-    apk add --update --no-cache \
+        bash curl xz \
+    && apk add --update --no-cache \
         --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
         apache2 php81 php81-mbstring php81-apache2
 
@@ -35,42 +35,42 @@ RUN mkdir -p \
 
 ## installing the s6_overlay noarch
 RUN wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" \
-        -O "${S6_OVERLAY_INST}/s6-overlay-noarch.tar.xz" && \
-    tar -C / -xJf "${S6_OVERLAY_INST}/s6-overlay-noarch.tar.xz"
+        -O "${S6_OVERLAY_INST}/s6-overlay-noarch.tar.xz" \
+    && tar -C / -xJf "${S6_OVERLAY_INST}/s6-overlay-noarch.tar.xz"
 
 ## installing the s6_overlay arch either arm || amd
 RUN if [ "${TARGETARCH}" = "arm64" ]; then \
         wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz" \
-            -O "${S6_OVERLAY_INST}/s6-overlay-aarch64.tar.xz" && \
-        tar -C / -xJf "${S6_OVERLAY_INST}/s6-overlay-aarch64.tar.xz" ; \
+            -O "${S6_OVERLAY_INST}/s6-overlay-aarch64.tar.xz" \
+        && tar -C / -xJf "${S6_OVERLAY_INST}/s6-overlay-aarch64.tar.xz" ; \
     elif [ "${TARGETARCH}" = "amd64" ]; then \
         wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz" \
-            -O "${S6_OVERLAY_INST}/s6-overlay-x86_64.tar.xz" && \
-        tar -C / -xJf "${S6_OVERLAY_INST}/s6-overlay-x86_64.tar.xz" ; \
+            -O "${S6_OVERLAY_INST}/s6-overlay-x86_64.tar.xz" \
+        && tar -C / -xJf "${S6_OVERLAY_INST}/s6-overlay-x86_64.tar.xz" ; \
     else \
-        echo "DANGER WILL ROBINSON. UNKNOWN TARGETARCH" && \
-        exit 1 ; \
+        echo "DANGER WILL ROBINSON. UNKNOWN TARGETARCH" \
+        && exit 1 ; \
     fi
 
 ## pulling repo xlxd
 ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#master ${XLXD_INST_DIR}
 
 ## sed edits for xlxd config
-RUN sed -i "s/\#define\ RUN_AS_DAEMON/\/\/\#define\ RUN_AS_DAEMON/g" ${XLXD_INST_DIR}/src/main.h && \
-    sed -i "1!b;s/\(NB_OF_MODULES[[:blank:]]*\)[[:digit:]]*/\1${MODULES}/g" ${XLXD_INST_DIR}/src/main.h && \
-    sed -i "s/\(YSF_AUTOLINK_ENABLE[[:blank:]]*\)[[:digit:]]/\1${YSF_AUTOLINK_ENABLE}/g" ${XLXD_INST_DIR}/src/main.h && \
-    sed -i "s/\(YSF_AUTOLINK_MODULE[[:blank:]]*\)'[[:alpha:]]'/\1\'${YSF_AUTOLINK_MODULE}\'/g" ${XLXD_INST_DIR}/src/main.h && \
-    sed -i "s/\(YSF_PORT[[:blank:]]*\)[[:digit:]]/\1${YSF_PORT}/g" ${XLXD_INST_DIR}/src/main.h && \
-    sed -i "s/\(YSF_DEFAULT_NODE_RX_FREQ[[:blank:]]*\)[[:digit:]]*/\1${YSF_DEFAULT_NODE_RX_FREQ}/g" ${XLXD_INST_DIR}/src/main.h && \
-    sed -i "s/\(YSF_DEFAULT_NODE_TX_FREQ[[:blank:]]*\)[[:digit:]]*/\1${YSF_DEFAULT_NODE_TX_FREQ}/g" ${XLXD_INST_DIR}/src/main.h && \
-    cp ${XLXD_INST_DIR}/src/main.h ${XLXD_DIR}/main.h.customized && \
-    cp ${XLXD_INST_DIR}/src/cysfprotocol.cpp ${XLXD_DIR}/cysfprotocol.cpp.customized
+RUN sed -i "s/\#define\ RUN_AS_DAEMON/\/\/\#define\ RUN_AS_DAEMON/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "1!b;s/\(NB_OF_MODULES[[:blank:]]*\)[[:digit:]]*/\1${MODULES}/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_AUTOLINK_ENABLE[[:blank:]]*\)[[:digit:]]/\1${YSF_AUTOLINK_ENABLE}/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_AUTOLINK_MODULE[[:blank:]]*\)'[[:alpha:]]'/\1\'${YSF_AUTOLINK_MODULE}\'/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_PORT[[:blank:]]*\)[[:digit:]]/\1${YSF_PORT}/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_DEFAULT_NODE_RX_FREQ[[:blank:]]*\)[[:digit:]]*/\1${YSF_DEFAULT_NODE_RX_FREQ}/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_DEFAULT_NODE_TX_FREQ[[:blank:]]*\)[[:digit:]]*/\1${YSF_DEFAULT_NODE_TX_FREQ}/g" ${XLXD_INST_DIR}/src/main.h \
+    && cp ${XLXD_INST_DIR}/src/main.h ${XLXD_DIR}/main.h.customized \
+    && cp ${XLXD_INST_DIR}/src/cysfprotocol.cpp ${XLXD_DIR}/cysfprotocol.cpp.customized
 
 ## making xlxd
-RUN cd ${XLXD_INST_DIR}/src && \
-    make clean && \
-    make && \
-    make install
+RUN cd ${XLXD_INST_DIR}/src \
+    && make clean \
+    && make \
+    && make install
 
 ## copying the dashboard
 RUN cp -ivR ${XLXD_INST_DIR}/dashboard/* ${XLXD_WEB_DIR}/
@@ -79,11 +79,11 @@ RUN cp -ivR ${XLXD_INST_DIR}/dashboard/* ${XLXD_WEB_DIR}/
 COPY s6_overlay/ /
 
 ## cleanup
-RUN rm -rf /var/cache/apk/* && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf /tmp/* && \
-    rm -rf /var/tmp/* && \
-    rm -rf /src
+RUN rm -rf /var/cache/apk/* \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/* \
+    && rm -rf /src
 
 ## exposing needed ports
 EXPOSE 80/tcp
