@@ -52,7 +52,7 @@ ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
 # generate virtual host
 ##cat << EOF > /etc/apache2/sites-available/${URL}.conf
-cat << EOF > /etc/apache2/apache.conf
+cat << EOF > /etc/apache2/conf.d/${URL}.conf
 <VirtualHost *:${PORT}>
     ServerName ${URL}
     DocumentRoot /var/www/xlxd
