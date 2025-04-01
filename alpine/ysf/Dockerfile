@@ -81,8 +81,6 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
 ###### s6 overlay config begin ######
 #####################################
 
-COPY s6_overlay/ /
-
 
 #### httpd ####
 
@@ -138,11 +136,7 @@ longrun
 EOF
 
 ## define entrypoint for YSFReflector && start in foreground
-COPY --chmod=700 <<EOF /etc/s6-overlay/s6-rc.d/YSFReflector/run
-#!/command/with-contenv sh
-!!!!!!!!CHANGE TO SCRIPT!!!!!!!!!!!!!
-exec /usr/sbin/httpd -D FOREGROUND
-EOF
+COPY --chmod=700 scripts/YSFReflector_run.sh /etc/s6-overlay/s6-rc.d/YSFReflector/run
 
 ## register YSFReflector as a service for s6
 RUN touch /etc/s6-overlay/s6-rc.d/user/contents.d/YSFReflector
