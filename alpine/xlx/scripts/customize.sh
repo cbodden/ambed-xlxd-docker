@@ -51,7 +51,8 @@ sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/users.php # convert date format
 ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
 # generate virtual host
-cat << EOF > /etc/apache2/sites-available/${URL}.conf
+##cat << EOF > /etc/apache2/sites-available/${URL}.conf
+cat << EOF > /etc/apache2/apache.conf
 <VirtualHost *:${PORT}>
     ServerName ${URL}
     DocumentRoot /var/www/xlxd
@@ -64,15 +65,15 @@ if [ ! -z ${TZ:-} ]; then
 
 fi
 
-# Configure httpd
-echo "Listen ${PORT}" >/etc/apache2/ports.conf
-echo "ServerName ${URL}" >> /etc/apache2/apache2.conf
+## Configure httpd
+#echo "Listen ${PORT}" >/etc/apache2/ports.conf
+#echo "ServerName ${URL}" >> /etc/apache2/apache2.conf
 
-# disable default site(s)
-a2dissite *default >/dev/null 2>&1
+## disable default site(s)
+#a2dissite *default >/dev/null 2>&1
 
-# enable xlxd dashboard
-a2ensite ${URL} >/dev/null 2>&1
+## enable xlxd dashboard
+#a2ensite ${URL} >/dev/null 2>&1
 
 touch /.firstRunComplete
 echo "xlxd first run setup complete"
