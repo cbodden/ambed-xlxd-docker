@@ -35,28 +35,28 @@ RUN mkdir -p \
 ###### xlxd install ######
 ##########################
 
- ## pulling repo xlxd
- ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#master ${XLXD_INST_DIR}
- 
- ## sed edits for xlxd config
- RUN sed -i "s/\#define\ RUN_AS_DAEMON/\/\/\#define\ RUN_AS_DAEMON/g" ${XLXD_INST_DIR}/src/main.h \
-     && sed -i "1!b;s/\(NB_OF_MODULES[[:blank:]]*\)[[:digit:]]*/\1${MODULES}/g" ${XLXD_INST_DIR}/src/main.h \
-     && sed -i "s/\(YSF_AUTOLINK_ENABLE[[:blank:]]*\)[[:digit:]]/\1${YSF_AUTOLINK_ENABLE}/g" ${XLXD_INST_DIR}/src/main.h \
-     && sed -i "s/\(YSF_AUTOLINK_MODULE[[:blank:]]*\)'[[:alpha:]]'/\1\'${YSF_AUTOLINK_MODULE}\'/g" ${XLXD_INST_DIR}/src/main.h \
-     && sed -i "s/\(YSF_PORT[[:blank:]]*\)[[:digit:]]/\1${YSF_PORT}/g" ${XLXD_INST_DIR}/src/main.h \
-     && sed -i "s/\(YSF_DEFAULT_NODE_RX_FREQ[[:blank:]]*\)[[:digit:]]*/\1${YSF_DEFAULT_NODE_RX_FREQ}/g" ${XLXD_INST_DIR}/src/main.h \
-     && sed -i "s/\(YSF_DEFAULT_NODE_TX_FREQ[[:blank:]]*\)[[:digit:]]*/\1${YSF_DEFAULT_NODE_TX_FREQ}/g" ${XLXD_INST_DIR}/src/main.h \
-     && cp ${XLXD_INST_DIR}/src/main.h ${XLXD_DIR}/main.h.customized \
-     && cp ${XLXD_INST_DIR}/src/cysfprotocol.cpp ${XLXD_DIR}/cysfprotocol.cpp.customized
- 
- ## making xlxd
- RUN cd ${XLXD_INST_DIR}/src \
-     && make clean \
-     && make \
-     && make install
- 
- ## copying the dashboard
- RUN cp -ivR ${XLXD_INST_DIR}/dashboard/* ${XLXD_WEB_DIR}/
+## pulling repo xlxd
+ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#master ${XLXD_INST_DIR}
+
+## sed edits for xlxd config
+RUN sed -i "s/\#define\ RUN_AS_DAEMON/\/\/\#define\ RUN_AS_DAEMON/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "1!b;s/\(NB_OF_MODULES[[:blank:]]*\)[[:digit:]]*/\1${MODULES}/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_AUTOLINK_ENABLE[[:blank:]]*\)[[:digit:]]/\1${YSF_AUTOLINK_ENABLE}/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_AUTOLINK_MODULE[[:blank:]]*\)'[[:alpha:]]'/\1\'${YSF_AUTOLINK_MODULE}\'/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_PORT[[:blank:]]*\)[[:digit:]]/\1${YSF_PORT}/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_DEFAULT_NODE_RX_FREQ[[:blank:]]*\)[[:digit:]]*/\1${YSF_DEFAULT_NODE_RX_FREQ}/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/\(YSF_DEFAULT_NODE_TX_FREQ[[:blank:]]*\)[[:digit:]]*/\1${YSF_DEFAULT_NODE_TX_FREQ}/g" ${XLXD_INST_DIR}/src/main.h \
+    && cp ${XLXD_INST_DIR}/src/main.h ${XLXD_DIR}/main.h.customized \
+    && cp ${XLXD_INST_DIR}/src/cysfprotocol.cpp ${XLXD_DIR}/cysfprotocol.cpp.customized
+
+## making xlxd
+RUN cd ${XLXD_INST_DIR}/src \
+    && make clean \
+    && make \
+    && make install
+
+## copying the dashboard
+RUN cp -ivR ${XLXD_INST_DIR}/dashboard/* ${XLXD_WEB_DIR}/
 
 #################################
 ###### s6 overlay install  ######
@@ -93,36 +93,7 @@ longrun
 EOF
 
 ## Define entrypoint for xlxd && start in foreground
-COPY --chmod=700 <<EOF /etc/s6-overlay/s6-rc.d/xlxd/run
-#!/command/with-contenv sh
-
-PIDFILE="/var/log/xlxd.pid"
-XMLFILE="/var/log/xlxd.xml"
-IP=$( hostname -i )
-AMBED=ambed
-
-if [ -z ${XLXNUM:-} ]; then
-  echo "XLXNUM is not set"
-  exit 1
-fi
-
-# check for modified config files
-cp -p /config/*.* ${XLXD_DIR}
-
-# restore xml file to preserve historical data and allow dashboard to start immediately
-cp -p /config/log/xlxd.xml ${XMLFILE}
-
-# download the dmrid.dat from the XLXAPI server to the xlxd folder
-curl -L -s -o ${XLXD_DIR}/dmrid.dat http://xlxapi.rlx.lu/api/exportdmr.php
-
-# TODO: generate xlxd.interlink file
-
-# Create pid file for service uptime dashboard class
-touch ${PIDFILE}
-
-# start daemon
-exec /xlxd/xlxd ${XLXNUM} ${IP} ${AMBED}
-EOF
+COPY --chmod=700 scripts/xlxd_run.sh /etc/s6-overlay/s6-rc.d/xlxd/run
 
 ## register xlxd as a service for s6
 RUN touch /etc/s6-overlay/s6-rc.d/user/contents.d/xlxd
