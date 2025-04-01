@@ -50,37 +50,13 @@ sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/users.php # convert date format
 # set timezone
 ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
-# # generate virtual host
-# ##cat << EOF > /etc/apache2/sites-available/${URL}.conf
-# cat << EOF > /etc/apache2/conf.d/${URL}.conf
-# <VirtualHost *:${PORT}>
-#     ServerName ${URL}
-#     DocumentRoot /var/www/xlxd
-# </VirtualHost>
-# EOF
-
 sed -i "s/ServerAdmin you@example.com/ServerAdmin ${EMAIL}/g" /etc/apache2/httpd.conf
 sed -i "s/ServerSignature On/ServerSignature Off/g" /etc/apache2/httpd.conf
 sed -i "s/#ServerName www.example.com:80/ServerName ${URL}:80/g" /etc/apache2/httpd.conf
 sed -i "s/\/var\/www\/localhost\/htdocs/\/var\/www\/xlxd/g" /etc/apache2/httpd.conf
 sed -i "s/DirectoryIndex index.html/DirectoryIndex index.php/g" /etc/apache2/httpd.conf
 chown -R apache:apache /var/www
-
-# # Configure default timezone in php
-# if [ ! -z ${TZ:-} ]; then
-#   echo "date.timezone = \""${TZ}"\"" >> /etc/php/*/apache2/php.ini
-# 
-# fi
-
-## Configure httpd
-#echo "Listen ${PORT}" >/etc/apache2/ports.conf
-#echo "ServerName ${URL}" >> /etc/apache2/apache2.conf
-
-## disable default site(s)
-#a2dissite *default >/dev/null 2>&1
-
-## enable xlxd dashboard
-#a2ensite ${URL} >/dev/null 2>&1
+find /var/www/xlxd/ -name '*.php' -exec dos2unix {} \;
 
 touch /.firstRunComplete
 echo "xlxd first run setup complete"

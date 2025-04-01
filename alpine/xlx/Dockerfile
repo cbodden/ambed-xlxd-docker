@@ -20,9 +20,8 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked \
     && apk add --update --no-cache \
         alpine-sdk build-base linux-headers \
         bash curl xz \
-    && apk add --update --no-cache \
-        --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
-        apache2 apache2-utils php84 php84-apache2 php84-mbstring
+        apache2 apache2-utils \
+        php84 php84-apache2 php84-common php84-mbstring php84-session
 
 ## making dirs for installs
 RUN mkdir -p \
@@ -103,6 +102,7 @@ RUN mkdir /etc/s6-overlay/s6-rc.d/xlxd/dependencies.d/ \
     && touch /etc/s6-overlay/s6-rc.d/xlxd/dependencies.d/customize \
     && touch /etc/s6-overlay/s6-rc.d/xlxd/dependencies.d/base
 
+
 #### httpd ####
 
 ## define httpd as a long running s6 service
@@ -125,6 +125,7 @@ RUN mkdir /etc/s6-overlay/s6-rc.d/httpd/dependencies.d/ \
     && touch /etc/s6-overlay/s6-rc.d/httpd/dependencies.d/customize \
     && touch /etc/s6-overlay/s6-rc.d/httpd/dependencies.d/base
 
+
 #### httpd customization script ####
 
 ## define httpd customization as a oneshot service
@@ -146,7 +147,6 @@ COPY --chmod=700 scripts/customize.sh /etc/s6-overlay/scripts/
 ## register dependencies 
 RUN mkdir /etc/s6-overlay/s6-rc.d/customize/dependencies.d/ \
     && touch /etc/s6-overlay/s6-rc.d/customize/dependencies.d/base
-
 
 ###################################
 ###### s6 overlay config end ######
