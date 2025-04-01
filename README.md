@@ -7,8 +7,8 @@
 | Services        | Image Tags            | Architectures           | Base Image         |
 | :-------------- | :-------------------- | :-----------------------| :----------------- |
 | AMBEd           | [latest & test](https://hub.docker.com/r/cbodden/ambed-docker/tags)         | x86_64, ARM64/v8        | Ubuntu Latest      |
-| XLXd            | [latest & test](https://hub.docker.com/r/cbodden/xlxd-docker/tags)         | x86_64, ARM64/v8        | Ubuntu Latest      |
-| YSFReflector    | [latest & test](https://hub.docker.com/r/cbodden/ysfreflector-docker/tags)         | x86_64, ARM64/v8        | Ubuntu Latest      |
+| XLXd            | [latest & test](https://hub.docker.com/r/cbodden/xlxd-docker/tags)         | x86_64, ARM64/v8        | Alpine Latest      |
+| YSFReflector    | [latest & test](https://hub.docker.com/r/cbodden/ysfreflector-docker/tags)         | x86_64, ARM64/v8        | Alpine Latest      |
 
 
 AMBEd FTDI testing done with:
