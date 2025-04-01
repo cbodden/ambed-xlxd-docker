@@ -50,20 +50,25 @@ sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/users.php # convert date format
 # set timezone
 ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
-# generate virtual host
-##cat << EOF > /etc/apache2/sites-available/${URL}.conf
-cat << EOF > /etc/apache2/conf.d/${URL}.conf
-<VirtualHost *:${PORT}>
-    ServerName ${URL}
-    DocumentRoot /var/www/xlxd
-</VirtualHost>
-EOF
+# # generate virtual host
+# ##cat << EOF > /etc/apache2/sites-available/${URL}.conf
+# cat << EOF > /etc/apache2/conf.d/${URL}.conf
+# <VirtualHost *:${PORT}>
+#     ServerName ${URL}
+#     DocumentRoot /var/www/xlxd
+# </VirtualHost>
+# EOF
 
-# Configure default timezone in php
-if [ ! -z ${TZ:-} ]; then
-  echo "date.timezone = \""${TZ}"\"" >> /etc/php/*/apache2/php.ini
+sed -i "s/ServerAdmin you@example.com/ServerAdmin ${EMAIL}/g" /etc/apache2/httpd.conf
+sed -i "s/ServerSignature On/ServerSignature Off/g" /etc/apache2/httpd.conf
+sed -i "s/\/var\/www\/localhost\/htdocs/\/var\/www\/xlxd/g" /etc/apache2/httpd.conf
+sed -i "s/DirectoryIndex index.html/DirectoryIndex index.php/g" /etc/apache2/httpd.conf
 
-fi
+# # Configure default timezone in php
+# if [ ! -z ${TZ:-} ]; then
+#   echo "date.timezone = \""${TZ}"\"" >> /etc/php/*/apache2/php.ini
+# 
+# fi
 
 ## Configure httpd
 #echo "Listen ${PORT}" >/etc/apache2/ports.conf
