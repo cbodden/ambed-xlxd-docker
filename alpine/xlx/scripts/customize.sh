@@ -61,8 +61,10 @@ ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
 sed -i "s/ServerAdmin you@example.com/ServerAdmin ${EMAIL}/g" /etc/apache2/httpd.conf
 sed -i "s/ServerSignature On/ServerSignature Off/g" /etc/apache2/httpd.conf
+sed -i "s/#ServerName www.example.com:80/ServerName ${URL}:80/g" /etc/apache2/httpd.conf
 sed -i "s/\/var\/www\/localhost\/htdocs/\/var\/www\/xlxd/g" /etc/apache2/httpd.conf
 sed -i "s/DirectoryIndex index.html/DirectoryIndex index.php/g" /etc/apache2/httpd.conf
+chown -R apache:apache /var/www
 
 # # Configure default timezone in php
 # if [ ! -z ${TZ:-} ]; then
