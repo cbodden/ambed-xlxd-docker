@@ -74,27 +74,37 @@ define("SHOWQRZ", "on");
 ?>
 EOF
 
+# edit apache for host
+sed -i "s/ServerAdmin you@example.com/ServerAdmin ${EMAIL}/g" /etc/apache2/httpd.conf
+sed -i "s/ServerSignature On/ServerSignature Off/g" /etc/apache2/httpd.conf
+sed -i "s/#ServerName www.example.com:80/ServerName ${URL}:80/g" /etc/apache2/httpd.conf
+sed -i "s/\/var\/www\/localhost\/htdocs/\/var\/www\/xlxd/g" /etc/apache2/httpd.conf
+sed -i "s/DirectoryIndex index.html/DirectoryIndex index.php/g" /etc/apache2/httpd.conf
+
 # make sure www is owned by www
-chown -R www-data:www-data /var/www/html
+chown -R apache:apache /var/www
 chmod -R 775 /var/www/html
 
-# generate virtual host
-cat << EOF > /etc/apache2/sites-available/${URL}.conf
-<VirtualHost *:${WEB_PORT}>
-    ServerName ${URL}
-    DocumentRoot /var/www/html
-</VirtualHost>
-EOF
+# remove file weirdness
+find /var/www/xlxd/ -name '*.php' -exec dos2unix {} \;
 
-# Configure httpd
-echo "Listen ${WEB_PORT}" >/etc/apache2/ports.conf
-echo "ServerName ${URL}" >> /etc/apache2/apache2.conf
-
-# disable default site(s)
-a2dissite *default >/dev/null 2>&1
-
-# enable YSFDashboard dashboard
-a2ensite ${URL} >/dev/null 2>&1
+# # generate virtual host
+# cat << EOF > /etc/apache2/sites-available/${URL}.conf
+# <VirtualHost *:${WEB_PORT}>
+#     ServerName ${URL}
+#     DocumentRoot /var/www/html
+# </VirtualHost>
+# EOF
+# 
+# # Configure httpd
+# echo "Listen ${WEB_PORT}" >/etc/apache2/ports.conf
+# echo "ServerName ${URL}" >> /etc/apache2/apache2.conf
+# 
+# # disable default site(s)
+# a2dissite *default >/dev/null 2>&1
+# 
+# # enable YSFDashboard dashboard
+# a2ensite ${URL} >/dev/null 2>&1
 
 touch /.firstRunComplete
 echo "YSFReflector first run setup complete"

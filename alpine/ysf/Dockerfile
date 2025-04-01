@@ -25,8 +25,7 @@ RUN mkdir -p \
     ${YSF_DIR} \
     ${YSF_INST_DIR} \
     ${YSF_DASH_INST_DIR} \
-    ${S6_OVERLAY_INST} \
-    /var/www/html/
+    ${S6_OVERLAY_INST}
 
 ##################################
 ###### YSFReflector Install ######
@@ -47,7 +46,8 @@ RUN cd ${YSF_INST_DIR}${YSF_DIR} \
 
 ADD --keep-git-dir=true https://github.com/dg9vh/YSFReflector-Dashboard.git#master ${YSF_DASH_INST_DIR}
 
-RUN cp ${YSF_DASH_INST_DIR}/favicon.ico /var/www/html/ \
+RUN mkdir /var/www/html \
+    && cp ${YSF_DASH_INST_DIR}/favicon.ico /var/www/html/ \
     && cp ${YSF_DASH_INST_DIR}/index.php /var/www/html/ \
     && cp ${YSF_DASH_INST_DIR}/txinfo.php /var/www/html/ \
     && cp ${YSF_DASH_INST_DIR}/version.php /var/www/html/ \
