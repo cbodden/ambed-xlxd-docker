@@ -16,9 +16,7 @@ ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/do
 RUN --mount=type=cache,target=/var/cache/apk,sharing=locked \
     apk update && \
     apk add --no-cache \
-        build-base linux-headers \
-        coreutils gcc g++ \
-        curl git bash xz zstd
+        build-base linux-headers coreutils gcc g++ curl git bash xz zstd
 
 RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
     wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r1/glibc-2.35-r1.apk && \
@@ -36,11 +34,6 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
         wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz" && \
         tar -xJf "${S6_OVERLAY_INST}/s6-overlay-aarch64.tar.xz" && \
         mv * / ; \
-    elif [ "${TARGETARCH}" = "amd64" ]; then \
-        cd "${S6_OVERLAY_INST}" && \
-        wget "${S6_OVERLAY_ADDRESS}${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz" && \
-        tar -xJf "${S6_OVERLAY_INST}/s6-overlay-x86_64.tar.xz" && \
-        mv * / ; \
     else \
         echo "DANGER WILL ROBINSON. UNKNOWN TARGETARCH" && \
         exit 1; \
@@ -50,44 +43,23 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
         cd "${FTDI_INST_DIR}" && \
         wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-arm-v8-${FTDI_INST_VER}.tgz" && \
         tar xfz "${FTDI_INST_DIR}/libftd2xx-linux-arm-v8-${FTDI_INST_VER}.tgz" && \
-        cp ${FTDI_INST_DIR}/linux-arm-v8/libftd2xx.* /usr/local/lib && \
-        ln -sf /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so && \
-        cp linux-arm-v8/*.h /usr/local/include/ && \
-        ldconfig /usr/local/lib ; \
-    elif [ "${TARGETARCH}" = "amd64" ]; then \
-        cd "${FTDI_INST_DIR}" && \
-        wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-x86_64-${FTDI_INST_VER}.tgz" && \
-        tar xfz "${FTDI_INST_DIR}/libftd2xx-linux-x86_64-${FTDI_INST_VER}.tgz" && \
-        cp ${FTDI_INST_DIR}/linux-x86_64/libftd2xx.* /usr/local/lib && \
-        ln -sf /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so && \
-        cp linux-x86_64/*.h /usr/local/include/ && \
-        ldconfig /usr/local/lib ; \
+        cp ${FTDI_INST_DIR}/linux-arm-v8/libftd2xx.* /usr/lib && \
+        ln -sf /usr/lib/libftd2xx.so.${FTDI_INST_VER} /usr/lib/libftd2xx.so && \
+        cp linux-arm-v8/*.h /usr/include && \
+        /usr/glibc-compat/sbin/ldconfig ; \
     else \
         echo "DANGER WILL ROBINSON. UNKNOWN TARGETARCH"; \
         exit 1; \
     fi
 
-##RUN ls -al /etc && \
-##    ldconfig && \
-##    exit 1 ; 
-
-RUN ln /usr/glibc-compat/lib/librt.so.1 /usr/local/lib/librt.so && \
-    ln /usr/glibc-compat/lib/libc.so.6 /usr/local/lib/libc.so && \
-    ln /usr/glibc-compat/lib/libpthread.so.0 /usr/local/lib/libpthread.so && \
-    ldconfig /usr/local/lib/ ;
+RUN ln -sf /usr/glibc-compat/lib/librt.so.1 /usr/local/lib/librt.so.1 && \
+    ln -sf /usr/glibc-compat/lib/libc.so.6 /usr/local/lib/libc.so.6 && \
+    ln -sf /usr/glibc-compat/lib/libpthread.so.0 /usr/local/lib/libpthread.so.0 ;
+##    /usr/glibc-compat/sbin/ldconfig ;
     
-##0.863 /usr/lib/librt.a
-##0.979 /usr/glibc-compat/lib/librt.so.1
-
-##0.874 /usr/lib/libpthread.a
-##0.961 /usr/glibc-compat/lib/libpthread.so.0
-
-##0.794 /lib/libc.musl-aarch64.so.1
-##0.899 /usr/lib/libc.so
-##0.899 /usr/lib/libc.musl-aarch64.so.1
-##0.899 /usr/lib/libc.a
-##0.899 /usr/glibc-compat/lib/libc.so
-##0.899 /usr/glibc-compat/lib/libc.so.6
+##RUN /usr/glibc-compat/sbin/ldconfig -v && \
+##    ls -al /usr/lib && \
+##    exit 1 ; 
 
 ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#master ${AMBED_INST_DIR}
 

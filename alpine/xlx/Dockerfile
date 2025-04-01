@@ -157,7 +157,6 @@ RUN mkdir /etc/s6-overlay/s6-rc.d/customize/dependencies.d/ \
 #####################
 
 RUN rm -rf /var/cache/apk/* \
-    && rm -rf /var/lib/apt/lists/* \
     && rm -rf /tmp/* \
     && rm -rf /var/tmp/* \
     && rm -rf /src
