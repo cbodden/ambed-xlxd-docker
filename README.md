@@ -18,12 +18,11 @@ AMBEd FTDI testing done with:
 Starting AMBEd 1.3.5
 
 Initializing vocodecs:
-s6-rc: info: service legacy-services successfully started
 Detected 3 USB-FTDI devices
 
-Description : ThumbDV	 Serial : D30CDTY5
-Description : ThumbDV	 Serial : D30CBZH8
-Description : FT230X Basic UART	 Serial : DK0EN6FB
+Description : ThumbDV    Serial : D30CDTY5
+Description : ThumbDV    Serial : D30CBZH8
+Description : DVstick-33         Serial : DOATDZAD
 
 Opening ThumbDV:D30CDTY5 device
 ReadDeviceVersion : AMBE3000R V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
@@ -31,11 +30,16 @@ ReadDeviceVersion : AMBE3000R V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
 Opening ThumbDV:D30CBZH8 device
 ReadDeviceVersion : AMBE3000R V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
 
-Codec interfaces initialized successfully : 2 channels available
+Opening DVstick-33:DOATDZAD device
+Trying DF2ET-3003 soft reset
+DF2ET-3003 soft reset succeeded
+ReadDeviceVersion : AMBE3003F V120.E100.XXXX.C106.G514.R008.A0030608.C0020208
+
+Codec interfaces initialized successfully : 4 channels available
 
 Initializing controller
 
-AMBEd started and listening on 172.31.0.2
+AMBEd started and listening on 0.0.0.0
 ```
 
 
