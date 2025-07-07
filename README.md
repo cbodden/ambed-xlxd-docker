@@ -59,7 +59,7 @@ AMBEd started and listening on 0.0.0.0
 - AMBEd: 1.2.5
 - XLXd: 2.5.3
 - FTDI: 1.4.33
-- S6 Overlay: 3.2.0.2
+- S6 Overlay: 3.2.1.0
 - Ubuntu: Latest
 - YSFReflector: 20210824
 - YSFReflector-Dashboard: 20210331-2
