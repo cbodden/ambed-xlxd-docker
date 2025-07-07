@@ -10,11 +10,11 @@ if [ -z ${XLXNUM:-} ]; then
   exit 1
 fi
 
-## check for modified config files
-#cp -p /config/*.* ${XLXD_DIR}
+# check for modified config files
+cp -p /config/*.* ${XLXD_DIR}
 
-## restore xml file to preserve historical data and allow dashboard to start immediately
-#cp -p /config/log/xlxd.xml ${XMLFILE}
+# restore xml file to preserve historical data and allow dashboard to start immediately
+cp -p /config/log/xlxd.xml ${XMLFILE}
 
 # download the dmrid.dat from the XLXAPI server to the xlxd folder
 curl -L -s -o ${XLXD_DIR}/dmrid.dat http://xlxapi.rlx.lu/api/exportdmr.php
