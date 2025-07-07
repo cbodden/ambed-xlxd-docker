@@ -56,6 +56,7 @@ AMBEd started and listening on 0.0.0.0
 - port: 80 (for the ysf dashboard)
 
 ### Versions
+- Alpine: Latest
 - AMBEd: 1.2.5
 - XLXd: 2.5.3
 - FTDI: 1.4.33
