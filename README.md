@@ -45,16 +45,6 @@ AMBEd started and listening on 0.0.0.0
 
 ## General
 
-### XLXd YSF Default Settings
-- Autolink enabled: 1
-- Autolink module: A
-- port: 42000
-- Default RX/TX freq: 438.000.000
-
-### YSFReflector Default Settings
-- port: 42000
-- port: 80 (for the ysf dashboard)
-
 ### Versions
 - Alpine: Latest
 - AMBEd: 1.2.5
@@ -73,9 +63,6 @@ AMBEd started and listening on 0.0.0.0
 
 XLXd && AMBEd:
 - Copyright (C) 2016 Jean-Luc Deltombe LX3JL and Luc Engelmann LX1IQ
-
-YSFReflector:
-- Copyright (C) Jonathan Naylor G4KLX
 
 All other work:
 - Copyright (C) 2023 cbodden
