@@ -15,7 +15,7 @@ ARG XLXD_GIT_REF=a978f03671d87c6d9ac13453689755991e5cb668
 ARG FTDI_INST_VER=1.4.33 FTDI_INST_DIR=/src/ftdi
 ARG FTDI_INST_ADDRESS=https://ftdichip.com/wp-content/uploads/2025/03
 ARG FTDI_FALLBACK_IMAGE
-ARG S6_OVERLAY_VERSION=3.2.1.0 S6_OVERLAY_INST=/src/S6
+ARG S6_OVERLAY_VERSION=3.2.3.2 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 ## optional ubuntu archive mirror (ex: http://azure.archive.ubuntu.com/ubuntu on github amd64 runners)
 ARG UBUNTU_MIRROR
