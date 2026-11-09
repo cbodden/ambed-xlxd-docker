@@ -1,6 +1,6 @@
 ## xlx
 # syntax=docker/dockerfile:1-labs
-FROM --platform=$BUILDPLATFORM alpine:latest
+FROM alpine:latest
 
 ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8"
 ENV CALLHOME CALLSIGN COMMENT COUNTRY DESCRIPTION EMAIL PORT TZ URL XLXNUM
@@ -8,6 +8,8 @@ ENV MODULES MODULEA MODULEB MODULEC MODULED MODULEE
 ENV XLXD_DIR=/xlxd XLXD_INST_DIR=/src/xlxd XLXD_WEB_DIR=/var/www/xlxd
 ENV XLXCONFIG=/var/www/xlxd/pgs/config.inc.php
 ARG TARGETARCH
+## LX3JL/xlxd commit : xlxd 2.6.1 / AMBEd 1.4.0
+ARG XLXD_GIT_REF=a978f03671d87c6d9ac13453689755991e5cb668
 ARG S6_OVERLAY_VERSION=3.2.1.0 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 
@@ -19,7 +21,7 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked \
         alpine-sdk build-base linux-headers \
         bash curl xz \
         apache2 apache2-utils \
-        php84 php84-apache2 php84-common php84-mbstring php84-session
+        php84 php84-apache2 php84-common php84-curl php84-mbstring php84-session
 
 ## making dirs for installs
 RUN mkdir -p \
@@ -33,7 +35,7 @@ RUN mkdir -p \
 ##########################
 
 ## pulling repo xlxd
-ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#master ${XLXD_INST_DIR}
+ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#${XLXD_GIT_REF} ${XLXD_INST_DIR}
 
 ## sed edits for xlxd config
 RUN sed -i "s/\#define\ RUN_AS_DAEMON/\/\/\#define\ RUN_AS_DAEMON/g" ${XLXD_INST_DIR}/src/main.h \
@@ -47,8 +49,8 @@ RUN cd ${XLXD_INST_DIR}/src \
     && make \
     && make install
 
-## copying the dashboard
-RUN cp -ivR ${XLXD_INST_DIR}/dashboard/* ${XLXD_WEB_DIR}/
+## copying the dashboard (upstream split into dashboard1 classic && dashboard2)
+RUN cp -ivR ${XLXD_INST_DIR}/dashboard1/* ${XLXD_WEB_DIR}/
 
 #################################
 ###### s6 overlay install  ######
@@ -164,6 +166,7 @@ EXPOSE 8880/udp
 EXPOSE 10001/udp
 EXPOSE 10002/udp
 EXPOSE 12345-12346/udp
+EXPOSE 17000/udp
 EXPOSE 20001/udp
 EXPOSE 21110/udp
 EXPOSE 30001/udp

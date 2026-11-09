@@ -47,8 +47,8 @@ AMBEd started and listening on 0.0.0.0
 
 ### Versions
 - Alpine: Latest
-- AMBEd: 1.2.5
-- XLXd: 2.5.3
+- AMBEd: 1.4.0
+- XLXd: 2.6.1
 - FTDI: 1.4.33
 - S6 Overlay: 3.2.1.0
 - Ubuntu: Latest
