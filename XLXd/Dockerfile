@@ -55,6 +55,21 @@ RUN cd ${XLXD_INST_DIR}/src \
 ## copying the dashboard (upstream split into dashboard1 classic && dashboard2)
 RUN cp -ivR ${XLXD_INST_DIR}/dashboard1/* ${XLXD_WEB_DIR}/
 
+## dashboard 2.4.7 html-escapes module names - keep the escaping but allow <br> so multi-line names still work
+COPY <<"EOF" /src/sanitize_module_name.php
+<?php
+// module names (PageOptions['ModuleNames']) : escape everything except <br>
+function sanitize_module_name($string) {
+    return preg_replace('#&lt;br\s*/?&gt;#i', '<br />', sanitize_output($string));
+}
+EOF
+
+RUN cat /src/sanitize_module_name.php >> ${XLXD_WEB_DIR}/pgs/functions.php \
+    && sed -i "/ModuleNames/s/sanitize_output(/sanitize_module_name(/" \
+        ${XLXD_WEB_DIR}/pgs/users.php ${XLXD_WEB_DIR}/pgs/modules.php \
+    && grep -q "sanitize_module_name(" ${XLXD_WEB_DIR}/pgs/users.php \
+    && grep -q "sanitize_module_name(" ${XLXD_WEB_DIR}/pgs/modules.php
+
 #################################
 ###### s6 overlay install  ######
 #################################
