@@ -13,7 +13,7 @@ ENV XLXCONFIG=/var/www/xlxd/pgs/config.inc.php
 ARG TARGETARCH
 ## LX3JL/xlxd commit : xlxd 2.6.1 / AMBEd 1.4.0
 ARG XLXD_GIT_REF=a978f03671d87c6d9ac13453689755991e5cb668
-ARG S6_OVERLAY_VERSION=3.2.1.0 S6_OVERLAY_INST=/src/S6
+ARG S6_OVERLAY_VERSION=3.2.3.2 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 
 ## mounting a cache volume - then apk updates and adds
@@ -108,7 +108,7 @@ EOF
 COPY --chmod=700 scripts/xlxd_run.sh /etc/s6-overlay/s6-rc.d/xlxd/run
 
 ## register xlxd as a service for s6
-RUN touch /etc/s6-overlay/s6-rc.d/user/contents.d/xlxd
+RUN touch /etc/s6-overlay/user-bundles.d/user/contents.d/xlxd
 
 ## register dependencies 
 RUN mkdir /etc/s6-overlay/s6-rc.d/xlxd/dependencies.d/ \
@@ -130,7 +130,7 @@ exec /usr/sbin/httpd -D FOREGROUND
 EOF
 
 ## register httpd as a service for s6
-RUN touch /etc/s6-overlay/s6-rc.d/user/contents.d/httpd
+RUN touch /etc/s6-overlay/user-bundles.d/user/contents.d/httpd
 
 ## register dependencies 
 RUN mkdir /etc/s6-overlay/s6-rc.d/httpd/dependencies.d/ \
@@ -152,7 +152,7 @@ COPY --chmod=700 <<EOF /etc/s6-overlay/s6-rc.d/customize/up
 EOF
 
 ## register httpd customization as a service for s6
-RUN touch /etc/s6-overlay/s6-rc.d/user/contents.d/customize
+RUN touch /etc/s6-overlay/user-bundles.d/user/contents.d/customize
 
 ## copying the httpd customization script to /etc/s6-overlay/scripts/customize.sh
 COPY --chmod=700 scripts/customize.sh /etc/s6-overlay/scripts/
