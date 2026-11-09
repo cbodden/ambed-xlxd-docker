@@ -3,11 +3,16 @@
 PIDFILE="/var/log/xlxd.pid"
 XMLFILE="/var/log/xlxd.xml"
 IP=$( hostname -i )
-AMBED=ambed
+AMBED=${AMBED:-ambed}
 
 if [ -z ${XLXNUM:-} ]; then
   echo "XLXNUM is not set"
   exit 1
+fi
+
+# xlxd falls back to 0.0.0.0 (itself) when the transcoder host doesn't resolve - say so loudly
+if ! echo "${AMBED}" | grep -qE '^[0-9.]+$' && ! getent hosts "${AMBED}" > /dev/null 2>&1; then
+  echo "WARNING : AMBED host '${AMBED}' does not resolve - transcoding is disabled. set AMBED to the ambed service / container name"
 fi
 
 # check for modified config files

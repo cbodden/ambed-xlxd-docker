@@ -28,7 +28,11 @@ fi
 
 sed -i "s/\(CallingHome\['Country'\][[:blank:]]*\=[[:blank:]]*\)\"\([[:print:]]*\)\"/\1\"$(echo ${COUNTRY} | awk '{gsub(/ /,"\\ ")}8')\"/g" ${XLXCONFIG} # country
 sed -i "s/\(CallingHome\['Comment'\][[:blank:]]*\=[[:blank:]]*\)\"\([[:print:]]*\)\"/\1\"$(echo ${DESCRIPTION} | awk '{gsub(/ /,"\\ ")}8')\"/g" ${XLXCONFIG} # description
-sed -i "s/\(PageOptions\['MetaDescription'\][[:blank:]]*\=[[:blank:]]*\)\"\([[:print:]]*\)\"/\1\"$(echo ${COMMENT} | awk '{gsub(/ /,"\\ ")}8')\"/g" ${XLXCONFIG} # comment
+if [ ! -z "${COMMENT:-}" ]; then
+  # MetaDescription is single quoted in the dashboard config
+  sed -i "s/\(PageOptions\['MetaDescription'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1'$(printf '%s' "${COMMENT}" | sed 's/[\/&]/\\&/g')'/g" ${XLXCONFIG} # comment
+
+fi
 sed -i "s/\(CallingHome\['MyDashBoardURL'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'http:\/\/${URL}:${PORT}\/\'/g" ${XLXCONFIG} # URL
 sed -i "s/\(CallingHome\['Active'\][[:blank:]]*\=[[:blank:]]*\)[[:alpha:]]*/\1${CALLHOME}/g" ${XLXCONFIG} # call home active
 sed -i "s/\(PageOptions\['NumberOfModules'\][[:blank:]]*\=[[:blank:]]*\)[[:digit:]]*/\1${MODULES}/g" ${XLXCONFIG} # number of modules
