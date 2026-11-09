@@ -1,6 +1,7 @@
-## weekly check of LX3JL/xlxd master against the XLXD_GIT_REF pinned in the Dockerfiles
-## opens (or updates) one issue when upstream has moved
-## a push that changes this check runs it as a dry run (report only, no issue)
+## weekly check of LX3JL/xlxd master && s6-overlay releases against what the Dockerfiles pin
+## opens a PR into testing that bumps the pin (one per upstream version), with a build check
+## a push that changes this check runs it as a dry run (report + pin diff only)
+## the schedule only fires from the default branch (main)
 name: upstream check
 
 on:
@@ -9,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: report only, do not open / update an issue
+        description: report only, do not open / update / close PRs
         type: boolean
         default: false
   push:
@@ -18,19 +19,24 @@ on:
       - '.github/scripts/upstream-check.sh'
 
 permissions:
-  contents: read
-  issues: write
+  contents: write        # push the upstream/* bump branches
+  pull-requests: write   # open / refresh / close the bump PRs
+  actions: write         # dispatch docker-images on a new bump branch
 
 jobs:
   check:
     runs-on: ubuntu-24.04
     steps:
+      ## PRs are cut from testing, whichever branch triggered the run
       - uses: actions/checkout@v4
+        with:
+          ref: testing
 
-      - name: compare pinned ref with upstream
+      - name: compare pinned refs with upstream
         shell: bash   # -o pipefail so a failing script isn't masked by tee
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+          BASE: testing
           DRY_RUN: ${{ github.event_name == 'push' || inputs.dry_run }}
         run: bash .github/scripts/upstream-check.sh | tee -a "${GITHUB_STEP_SUMMARY}"

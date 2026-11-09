@@ -176,17 +176,23 @@ Build notes:
 
 ### Upgrading
 
-A second workflow, [`upstream-check.yml`](./.github/workflows/upstream-check.yml), compares LX3JL/xlxd `master` with the pinned commit every Monday. When upstream has moved it opens (or updates) an issue with the version change, a compare link, the changed files that have affected this build before, and the upgrade checklist. Run it by hand from the Actions tab, or locally:
+A second workflow, [`upstream-check.yml`](./.github/workflows/upstream-check.yml), runs every Monday and compares the pins with upstream:
+
+- LX3JL/xlxd `master` vs `XLXD_GIT_REF`
+- the latest s6-overlay release vs `S6_OVERLAY_VERSION`
+
+(both pinned in `AMBEd/Dockerfile` and `XLXd/Dockerfile`). When one has moved it opens a PR into `testing` from `upstream/<name>-<version>` that bumps the pin in both Dockerfiles. The description has the version change, a compare link / CHANGELOG, the changed files that have affected this build before, and the checklist; a docker images build runs on the branch as a check (it publishes no tags). A newer version closes the older PR as superseded, and closing a PR without merging stops that version being proposed again. Nothing merges or deploys on its own. It needs "Allow GitHub Actions to create and approve pull requests" on in the repository settings. Run it by hand from the Actions tab (`dry_run` reports only), or locally:
 
 ```
-DRY_RUN=true bash .github/scripts/upstream-check.sh
+DRY_RUN=true REPO=cbodden/ambed-xlxd-docker bash .github/scripts/upstream-check.sh
 ```
 
 To upgrade:
-1. Set `ARG XLXD_GIT_REF=<new commit>` in `AMBEd/Dockerfile` and `XLXd/Dockerfile`
-2. Push to `testing` - CI publishes `:test`; run it against real hardware
-3. Merge `testing` into `main` - CI publishes `:latest`
-4. Tag the release, e.g. `git tag v2.6.2 origin/main && git push origin v2.6.2` - CI publishes `:2.6.2`
+1. Wait for the build check on the upstream PR, read it, and merge it into `testing` - CI publishes `:test`; run it against real hardware
+2. Merge `testing` into `main` - CI publishes `:latest`
+3. Tag the release, e.g. `git tag v2.6.2 origin/main && git push origin v2.6.2` - CI publishes `:2.6.2`
+
+To bump a pin by hand instead, set the `ARG` in both Dockerfiles and push to `testing`; any open upstream PR for it is closed on the next run.
 
 
 ## License
