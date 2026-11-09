@@ -115,7 +115,7 @@ The dashboard config is regenerated from these variables each time a new contain
 
 | Mount | Purpose |
 | :---- | :------ |
-| `/config` | Files copied into `/xlxd` at every start: `xlxd.whitelist`, `xlxd.blacklist`, `xlxd.interlink`, `xlxd.terminal`, and the calling-home hash `callinghome.php`. `log/xlxd.xml` here is restored at start so the dashboard has history immediately |
+| `/config` | Files copied into `/xlxd` at every start: `xlxd.whitelist`, `xlxd.blacklist`, `xlxd.interlink`, `xlxd.terminal`, and the calling-home hash `callinghome.php`. `log/xlxd.xml` here is restored at start so the dashboard has history immediately. Note the start-up copy is `cp /config/*.* /xlxd`: every file with a dot in its name is copied, so a leftover `main.h.customized`, `cysfprotocol.cpp.customized` or `config.inc.php` from an older install overwrites the image's reference copies in `/xlxd`. xlxd doesn't read those (the dashboard config is regenerated from the environment), but they're misleading - keep `/config` to the files above |
 | `/var/www/xlxd/css/layout.css`, `/var/www/xlxd/img/<file>` | Optional dashboard theme - mount **single files** over the image's dashboard (see below) |
 
 Keep `callinghome.php` in `/config` once the reflector has called home: it holds the hash that identifies the reflector to the XLX network. After the first call home, copy it out with `docker cp xlxd:/xlxd/callinghome.php ./config/`.
@@ -140,6 +140,18 @@ Keep `callinghome.php` in `/config` once the reflector has called home: it holds
 | 62030 | UDP | MMDVM |
 | 10100 | UDP | AMBEd controller (ambed container) |
 | 10101-10199 | UDP | AMBEd transcoding streams (ambed container) |
+
+Only publish (and forward on the firewall) the ports of the modes you serve; M17 on 17000/UDP needs AMBEd 1.4.0+ for Codec2 transcoding, which this image has.
+
+### 5. Build-time options
+
+These are compiled in, so changing them means building the image with `--build-arg`:
+
+| Build arg | Image | Default | Description |
+| :-------- | :---- | :------ | :---------- |
+| `YSF_AUTOLINK_MODULE` | XLXd | `A` | Module a YSF client is linked to when it doesn't pick one (upstream 2.6 uses `B`) |
+| `IMRS_DEFAULT_MODULE` | XLXd | `A` | Default module for Yaesu IMRS (Wires-X) clients (upstream 2.6 uses `B`) |
+| `USE_AGC` | AMBEd | `0` | `1` turns on the DVSI chips' automatic gain control |
 
 
 ## Dashboard

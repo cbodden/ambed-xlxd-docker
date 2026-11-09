@@ -13,6 +13,9 @@ ENV XLXCONFIG=/var/www/xlxd/pgs/config.inc.php
 ARG TARGETARCH
 ## LX3JL/xlxd commit : xlxd 2.6.1 / AMBEd 1.4.0
 ARG XLXD_GIT_REF=a978f03671d87c6d9ac13453689755991e5cb668
+## module a YSF client lands on when it doesn't pick one, and the IMRS (Wires-X) default module
+## upstream 2.6 uses B; A keeps them off a parrot / special-purpose module B
+ARG YSF_AUTOLINK_MODULE=A IMRS_DEFAULT_MODULE=A
 ARG S6_OVERLAY_VERSION=3.2.3.2 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 
@@ -43,6 +46,10 @@ ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#${XLXD_GIT_REF} ${XLXD
 ## sed edits for xlxd config
 RUN sed -i "s/\#define\ RUN_AS_DAEMON/\/\/\#define\ RUN_AS_DAEMON/g" ${XLXD_INST_DIR}/src/main.h \
     && sed -i "1!b;s/\(NB_OF_MODULES[[:blank:]]*\)[[:digit:]]*/\1${MODULES}/g" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/^\(#define[[:blank:]]*YSF_AUTOLINK_MODULE[[:blank:]]*\)'[A-Z]'/\1'${YSF_AUTOLINK_MODULE}'/" ${XLXD_INST_DIR}/src/main.h \
+    && sed -i "s/^\(#define[[:blank:]]*IMRS_DEFAULT_MODULE[[:blank:]]*\)'[A-Z]'/\1'${IMRS_DEFAULT_MODULE}'/" ${XLXD_INST_DIR}/src/main.h \
+    && grep -Eq "^#define[[:blank:]]+YSF_AUTOLINK_MODULE[[:blank:]]+'${YSF_AUTOLINK_MODULE}'" ${XLXD_INST_DIR}/src/main.h \
+    && grep -Eq "^#define[[:blank:]]+IMRS_DEFAULT_MODULE[[:blank:]]+'${IMRS_DEFAULT_MODULE}'" ${XLXD_INST_DIR}/src/main.h \
     && cp ${XLXD_INST_DIR}/src/main.h ${XLXD_DIR}/main.h.customized \
     && cp ${XLXD_INST_DIR}/src/cysfprotocol.cpp ${XLXD_DIR}/cysfprotocol.cpp.customized
 
