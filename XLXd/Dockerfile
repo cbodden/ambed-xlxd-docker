@@ -13,7 +13,7 @@ ENV XLXCONFIG=/var/www/xlxd/pgs/config.inc.php
 ARG TARGETARCH
 ## LX3JL/xlxd commit : xlxd 2.6.1 / AMBEd 1.4.0
 ARG XLXD_GIT_REF=a978f03671d87c6d9ac13453689755991e5cb668
-ARG S6_OVERLAY_VERSION=3.2.1.0 S6_OVERLAY_INST=/src/S6
+ARG S6_OVERLAY_VERSION=3.2.3.2 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 
 ## mounting a cache volume - then apk updates and adds
