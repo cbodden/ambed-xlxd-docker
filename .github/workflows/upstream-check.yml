@@ -1,0 +1,36 @@
+## weekly check of LX3JL/xlxd master against the XLXD_GIT_REF pinned in the Dockerfiles
+## opens (or updates) one issue when upstream has moved
+## a push that changes this check runs it as a dry run (report only, no issue)
+name: upstream check
+
+on:
+  schedule:
+    - cron: '0 13 * * 1'   # mondays
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: report only, do not open / update an issue
+        type: boolean
+        default: false
+  push:
+    paths:
+      - '.github/workflows/upstream-check.yml'
+      - '.github/scripts/upstream-check.sh'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: compare pinned ref with upstream
+        shell: bash   # -o pipefail so a failing script isn't masked by tee
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          DRY_RUN: ${{ github.event_name == 'push' || inputs.dry_run }}
+        run: bash .github/scripts/upstream-check.sh | tee -a "${GITHUB_STEP_SUMMARY}"
