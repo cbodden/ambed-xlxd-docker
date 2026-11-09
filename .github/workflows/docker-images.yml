@@ -32,8 +32,9 @@ jobs:
           - { name: ambed-docker, context: AMBEd }
           - { name: xlxd-docker,  context: XLXd }
         platform:
-          - { arch: amd64, os: linux/amd64, runner: ubuntu-24.04 }
-          - { arch: arm64, os: linux/arm64, runner: ubuntu-24.04-arm }
+          ## amd64 runners can't always reach archive.ubuntu.com - use azure's mirror (AMBEd only, xlxd is alpine)
+          - { arch: amd64, os: linux/amd64, runner: ubuntu-24.04, ubuntu_mirror: 'http://azure.archive.ubuntu.com/ubuntu' }
+          - { arch: arm64, os: linux/arm64, runner: ubuntu-24.04-arm, ubuntu_mirror: '' }
     steps:
       - uses: actions/checkout@v4
 
@@ -58,6 +59,8 @@ jobs:
         with:
           context: ${{ matrix.image.context }}
           platforms: ${{ matrix.platform.os }}
+          build-args: |
+            UBUNTU_MIRROR=${{ matrix.platform.ubuntu_mirror }}
           cache-from: type=gha,scope=${{ matrix.image.name }}-${{ matrix.platform.arch }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}-${{ matrix.platform.arch }}
           outputs: type=image,"name=docker.io/cbodden/${{ matrix.image.name }},ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}",push-by-digest=true,name-canonical=true,push=true
