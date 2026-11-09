@@ -34,11 +34,19 @@ sed -i "s/\(CallingHome\['Active'\][[:blank:]]*\=[[:blank:]]*\)[[:alpha:]]*/\1${
 sed -i "s/\(PageOptions\['NumberOfModules'\][[:blank:]]*\=[[:blank:]]*\)[[:digit:]]*/\1${MODULES}/g" ${XLXCONFIG} # number of modules
 sed -i "s/\(CallingHome\['HashFile'\][[:blank:]]*\=[[:blank:]]*\)\"\([[:print:]]*\)\"/\1\"\/xlxd\/callinghome.php\"/g" ${XLXCONFIG}
 sed -i "s/\(CallingHome\['LastCallHomefile'\][[:blank:]]*\=[[:blank:]]*\)\"\([[:print:]]*\)\"/\1\"\/xlxd\/lastcallhome.php\"/g" ${XLXCONFIG} # move callinghome file to /xlxd
-sed -i "s/\(PageOptions\['ModuleNames'\]\['A'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'${MODULEA}\'/g" ${XLXCONFIG} # name module A
-sed -i "s/\(PageOptions\['ModuleNames'\]\['B'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'${MODULEB}\'/g" ${XLXCONFIG} # name module B
-sed -i "s/\(PageOptions\['ModuleNames'\]\['C'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'${MODULEC}\'/g" ${XLXCONFIG} # name module C
-sed -i "s/\(PageOptions\['ModuleNames'\]\['D'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'${MODULED}\'/g" ${XLXCONFIG} # name module D
-sed -i "s/\(PageOptions\['ModuleNames'\]\['E'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'${MODULEE}\'/g" ${XLXCONFIG} # name module E
+# name modules A-Z from MODULEA..MODULEZ - replace the line if the dashboard config has one, else add it after the last module name
+for MOD in {A..Z}; do
+  [ "${MOD}" = "S" ] && continue # MODULES is the module count, not module S's name
+  VAR="MODULE${MOD}"
+  [ -z "${!VAR+set}" ] && continue
+  NAME=$(printf '%s' "${!VAR}" | sed 's/[\/&]/\\&/g') # escape for sed
+  if grep -q "PageOptions\['ModuleNames'\]\['${MOD}'\]" ${XLXCONFIG}; then
+    sed -i "s/\(PageOptions\['ModuleNames'\]\['${MOD}'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'${NAME}\'/g" ${XLXCONFIG}
+  else
+    LAST=$(grep -n "PageOptions\['ModuleNames'\]" ${XLXCONFIG} | tail -1 | cut -d: -f1)
+    sed -i "${LAST}a \$PageOptions['ModuleNames']['${MOD}']                     = '${NAME}';" ${XLXCONFIG}
+  fi
+done
 sed -i "s/\(PageOptions\['RepeatersPage'\]\['IPModus'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'HideIP\'/g" ${XLXCONFIG} # Hide IP addresses on repeaters page
 sed -i "s/\(PageOptions\['PeerPage'\]\['IPModus'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'HideIP\'/g" ${XLXCONFIG} # Hide IP addresses on peer page
 sed -i "s/\(PageOptions\['CustomTXT'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1'$(echo ${DESCRIPTION} | awk '{gsub(/ /,"\\ ")}8')'/g" ${XLXCONFIG}
@@ -47,6 +55,7 @@ sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/peers.php # convert date format
 sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/repeaters.php # convert date format to US
 sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/traffic.php # convert date format to US
 sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/users.php # convert date format to US
+sed -i "s/alt=\"XLX Multiprotocol Gateway Reflector\"/alt=\"${XLXNUM}\"/" ${XLXD_WEB_DIR}/index.php # header image alt text
 
 # set timezone
 ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
