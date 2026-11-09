@@ -30,6 +30,7 @@ services:
       - 10002:10002/udp # xlx interlink
       - 12345:12345/udp # icom terminal 1
       - 12346:12346/udp # icom terminal 2
+      - 17000:17000/udp # m17
       - 20001:20001/udp # dplus
       - 21110:21110/udp # yaesu imrs
       - 30001:30001/udp # dextra

@@ -1,12 +1,20 @@
 ## ambed
 # syntax=docker/dockerfile:1-labs
-FROM --platform=$BUILDPLATFORM ubuntu:latest AS base
+
+## previously published image used as a libftd2xx fallback (ftdichip.com 403s non-browser downloads)
+ARG FTDI_FALLBACK_IMAGE=cbodden/ambed-docker:latest
+FROM ${FTDI_FALLBACK_IMAGE} AS ftdi_fallback
+
+FROM ubuntu:latest AS base
 
 ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8"
 ARG TARGETARCH
 ARG AMBED_DIR=/ambed AMBED_INST_DIR=/src/ambed USE_AGC=0
+## LX3JL/xlxd commit : AMBEd 1.4.0 / xlxd 2.6.1
+ARG XLXD_GIT_REF=a978f03671d87c6d9ac13453689755991e5cb668
 ARG FTDI_INST_VER=1.4.33 FTDI_INST_DIR=/src/ftdi
 ARG FTDI_INST_ADDRESS=https://ftdichip.com/wp-content/uploads/2025/03
+ARG FTDI_FALLBACK_IMAGE
 ARG S6_OVERLAY_VERSION=3.2.1.0 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 
@@ -34,33 +42,35 @@ RUN mkdir -p \
 ##########################
 
 ## pulling repo xlxd
-ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#master ${AMBED_INST_DIR}
+ADD --keep-git-dir=true https://github.com/LX3JL/xlxd.git#${XLXD_GIT_REF} ${AMBED_INST_DIR}
 
-## installing FTDI drivers
+## staging the fallback FTDI lib && headers from the previously published image
+COPY --from=ftdi_fallback /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} ${FTDI_INST_DIR}/fallback/
+COPY --from=ftdi_fallback /usr/local/include/ftd2xx.h /usr/local/include/WinTypes.h ${FTDI_INST_DIR}/fallback/
+
+## installing FTDI drivers - ftdichip.com first, fallback image if the download fails
 RUN if [ "${TARGETARCH}" = "arm64" ]; then \
-        wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-arm-v8-${FTDI_INST_VER}.tgz" \
-            -O "${FTDI_INST_DIR}/libftd2xx-arm-v8-${FTDI_INST_VER}.tgz" \
-        && tar xfvz "${FTDI_INST_DIR}/libftd2xx-arm-v8-${FTDI_INST_VER}.tgz" \
-        && cp linux-arm-v8/libftd2xx.* /usr/local/lib \
-        && chmod 0755 /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} \
-        && ln -sf /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so \
-        && cp linux-arm-v8/ftd2xx.h /usr/local/include \
-        && cp linux-arm-v8/WinTypes.h /usr/local/include \
-        && ldconfig ; \
+        FTDI_ARCH=arm-v8 ; \
     elif [ "${TARGETARCH}" = "amd64" ]; then \
-        wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-x86_64-${FTDI_INST_VER}.tgz" \
-            -O "${FTDI_INST_DIR}/libftd2xx-x86_64-${FTDI_INST_VER}.tgz" \
-        && tar xfvz "${FTDI_INST_DIR}/libftd2xx-x86_64-${FTDI_INST_VER}.tgz" \
-        && cp linux-x86_64/libftd2xx.* /usr/local/lib \
-        && chmod 0755 /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} \
-        && ln -sf /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so \
-        && cp linux-x86_64/ftd2xx.h /usr/local/include \
-        && cp linux-x86_64/WinTypes.h /usr/local/include \
-        && ldconfig ; \
+        FTDI_ARCH=x86_64 ; \
     else \
         echo "DANGER WILL ROBINSON. UNKNOWN TARGETARCH" \
         && exit 1 ; \
-    fi
+    fi \
+    && if wget "${FTDI_INST_ADDRESS}/libftd2xx-linux-${FTDI_ARCH}-${FTDI_INST_VER}.tgz" \
+            -O "${FTDI_INST_DIR}/libftd2xx-${FTDI_ARCH}-${FTDI_INST_VER}.tgz" ; then \
+        tar -C "${FTDI_INST_DIR}" -xzvf "${FTDI_INST_DIR}/libftd2xx-${FTDI_ARCH}-${FTDI_INST_VER}.tgz" \
+        && cp ${FTDI_INST_DIR}/linux-${FTDI_ARCH}/libftd2xx.* /usr/local/lib \
+        && cp ${FTDI_INST_DIR}/linux-${FTDI_ARCH}/ftd2xx.h /usr/local/include \
+        && cp ${FTDI_INST_DIR}/linux-${FTDI_ARCH}/WinTypes.h /usr/local/include ; \
+    else \
+        echo "ftdichip.com download failed - using libftd2xx ${FTDI_INST_VER} from ${FTDI_FALLBACK_IMAGE}" \
+        && cp ${FTDI_INST_DIR}/fallback/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib \
+        && cp ${FTDI_INST_DIR}/fallback/*.h /usr/local/include ; \
+    fi \
+    && chmod 0755 /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} \
+    && ln -sf /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so \
+    && ldconfig
 
 ## sed edits for main.h
 RUN sed "s/\(USE_AGC[[:space:]]*\)[[:digit:]]/\1${USE_AGC}/g" ${AMBED_INST_DIR}${AMBED_DIR}/main.h \
