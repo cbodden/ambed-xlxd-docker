@@ -115,7 +115,7 @@ The dashboard config is regenerated from these variables each time a new contain
 
 | Mount | Purpose |
 | :---- | :------ |
-| `/config` | Files copied into `/xlxd` at every start: `xlxd.whitelist`, `xlxd.blacklist`, `xlxd.interlink`, `xlxd.terminal`, and the calling-home hash `callinghome.php`. `log/xlxd.xml` here is restored at start so the dashboard has history immediately. Anything else in `/config` (e.g. an old `main.h.customized` or `config.inc.php`) is ignored |
+| `/config` | Files copied into `/xlxd` at every start: `xlxd.whitelist`, `xlxd.blacklist`, `xlxd.interlink`, `xlxd.terminal`, and the calling-home hash `callinghome.php`. `log/xlxd.xml` here is restored at start so the dashboard has history immediately. Note the start-up copy is `cp /config/*.* /xlxd`: every file with a dot in its name is copied, so a leftover `main.h.customized`, `cysfprotocol.cpp.customized` or `config.inc.php` from an older install overwrites the image's reference copies in `/xlxd`. xlxd doesn't read those (the dashboard config is regenerated from the environment), but they're misleading - keep `/config` to the files above |
 | `/var/www/xlxd/css/layout.css`, `/var/www/xlxd/img/<file>` | Optional dashboard theme - mount **single files** over the image's dashboard (see below) |
 
 Keep `callinghome.php` in `/config` once the reflector has called home: it holds the hash that identifies the reflector to the XLX network. After the first call home, copy it out with `docker cp xlxd:/xlxd/callinghome.php ./config/`.
