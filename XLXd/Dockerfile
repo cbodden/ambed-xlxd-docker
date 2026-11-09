@@ -4,7 +4,7 @@ FROM alpine:latest
 
 ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8"
 ## runtime defaults - URL && XLXNUM must be set by the stack
-ENV CALLHOME="false" CALLSIGN="" COMMENT="" COUNTRY="" DESCRIPTION="" EMAIL="" \
+ENV AMBED="ambed" CALLHOME="false" CALLSIGN="" COMMENT="" COUNTRY="" DESCRIPTION="" EMAIL="" \
     PORT="80" TZ="UTC" URL="" XLXNUM=""
 ## module count (xlxd is built with 26) - names come from MODULEA..MODULEZ, unset keeps the dashboard default
 ENV MODULES="26"

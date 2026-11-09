@@ -1,45 +1,10 @@
-version: '3.8'
-
-services:
-  xlxd:
-    container_name: xlxd
-    hostname: xlxd
-    image: cbodden/xlxd-docker:latest
-    restart: unless-stopped
-    environment:
-      - CALLHOME='false'
-      - CALLSIGN='XYZ123'
-      - COMMENT='Hosted by XYZ123'
-      - COUNTRY='United States'
-      - DESCRIPTION='XLX000 by XYZ123'
-      - EMAIL='me@email.com'
-      - MODULES='4'
-      - MODULEA='Int.'
-      - MODULEB='Regional'
-      - MODULEC='National'
-      - MODULED=''
-      - PORT='80'
-      - TZ='UTC'
-      - URL='site.web.com'
-      - XLXNUM='XLX000'
-    ports:
-      - 80:80/tcp       # The www port
-      - 8080:8080/udp   # repnet
-      - 8880:8880/udp   # dmr
-      - 10001:10001/udp # xlxcore
-      - 10002:10002/udp # xlx interlink
-      - 12345:12345/udp # icom terminal 1
-      - 12346:12346/udp # icom terminal 2
-      - 17000:17000/udp # m17
-      - 20001:20001/udp # dplus
-      - 21110:21110/udp # yaesu imrs
-      - 30001:30001/udp # dextra
-      - 30051:30051/udp # dcs
-      - 40000:40000/udp # icom dv
-      - 42000:42000/udp # ysf
-      - 62030:62030/udp # mmdvm
-    volumes:
-      - "/etc/localtime:/etc/localtime:ro"
+## AMBEd + XLXd example
+##
+## AMBEd needs the FTDI sticks free of the kernel serial drivers, on the host :
+##   /etc/udev/rules.d/99-ambed.rules
+##   ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", MODE="0666", RUN+="/bin/sh -c 'rmmod ftdi_sio && rmmod usbserial'"
+##
+## images are also on ghcr.io/cbodden/{ambed,xlxd}-docker
 
 services:
   ambed:
@@ -47,7 +12,56 @@ services:
     hostname: ambed
     image: cbodden/ambed-docker:latest
     restart: unless-stopped
-    privileged: true
+    privileged: true          # or pass the usb bus through instead :
+    # devices:
+    #   - "/dev/bus/usb/001/:/dev/bus/usb/001/"
+    # device_cgroup_rules:
+    #   - 'c 188:* rwm'
     ports:
-      - 10100:10100/udp
-      - 10101-10199:10101-10199/udp
+      - 10100:10100/udp       # ambe controller
+      - 10101-10199:10101-10199/udp # ambe transcoding streams
+
+  xlxd:
+    container_name: xlxd
+    hostname: xlxd
+    image: cbodden/xlxd-docker:latest
+    restart: unless-stopped
+    depends_on:
+      - ambed
+    environment:
+      XLXNUM: XLX000          # required
+      URL: xlx.example.com    # required - dashboard host name
+      PORT: "80"
+      AMBED: ambed            # ambed service / container name - must resolve from xlxd
+      CALLSIGN: XYZ123
+      EMAIL: me@example.com
+      COUNTRY: United States
+      DESCRIPTION: XLX000 by XYZ123
+      COMMENT: Hosted by XYZ123
+      CALLHOME: "false"       # true registers the reflector with the xlx network
+      TZ: UTC
+      MODULES: "4"            # modules shown on the dashboard
+      MODULEA: Int.           # module names, MODULEA..MODULEZ - <br> for a line break
+      MODULEB: Regional
+      MODULEC: National
+      MODULED: Local<br>Ragchew
+    ports:
+      - 80:80/tcp             # dashboard
+      - 8080:8080/tcp         # repnet
+      - 8880:8880/udp         # dmr+ dmo
+      - 10001:10001/udp       # json interface
+      - 10002:10002/udp       # xlx interlink
+      - 12345-12346:12345-12346/udp # icom terminal
+      - 17000:17000/udp       # m17
+      - 20001:20001/udp       # dplus
+      - 21110:21110/udp       # yaesu imrs
+      - 30001:30001/udp       # dextra
+      - 30051:30051/udp       # dcs
+      - 40000:40000/udp       # icom terminal dv
+      - 42000:42000/udp       # ysf
+      - 62030:62030/udp       # mmdvm
+    volumes:
+      - ./config:/config      # xlxd.whitelist / blacklist / interlink / terminal, callinghome.php
+      ## optional dashboard theme - mount single files over the image's dashboard
+      # - ./custom/layout.css:/var/www/xlxd/css/layout.css
+      # - ./custom/header.jpg:/var/www/xlxd/img/header.jpg
