@@ -51,10 +51,40 @@ for MOD in {A..Z}; do
     sed -i "${LAST}a \$PageOptions['ModuleNames']['${MOD}']                     = '${NAME}';" ${XLXCONFIG}
   fi
 done
-sed -i "s/\(PageOptions\['RepeatersPage'\]\['IPModus'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'HideIP\'/g" ${XLXCONFIG} # Hide IP addresses on repeaters page
-sed -i "s/\(PageOptions\['PeerPage'\]\['IPModus'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1\'HideIP\'/g" ${XLXCONFIG} # Hide IP addresses on peer page
 sed -i "s/\(PageOptions\['CustomTXT'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1'$(echo ${DESCRIPTION} | awk '{gsub(/ /,"\\ ")}8')'/g" ${XLXCONFIG}
-sed -i "s/\(PageOptions\['IRCDDB'\]\['Show'\][[:blank:]]*\=[[:blank:]]*\)[[:alpha:]]*/\1false/g" ${XLXCONFIG}
+
+## dashboard switches - every default matches what the image did before they existed
+. /etc/s6-overlay/scripts/dashboard-env.sh
+
+IPMODUS=$(env_ipmodus "${IP_DISPLAY:-}") # repeaters / peers pages: how much of an IP to show
+sed -i "s/\(PageOptions\['RepeatersPage'\]\['IPModus'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1'${IPMODUS}'/g" ${XLXCONFIG}
+sed -i "s/\(PageOptions\['PeerPage'\]\['IPModus'\][[:blank:]]*\=[[:blank:]]*\)'\([[:print:]]*\)'/\1'${IPMODUS}'/g" ${XLXCONFIG}
+
+LIMIT=$(env_int "${LASTHEARD_LIMIT:-}" 39 1 999 LASTHEARD_LIMIT)
+sed -i "s/\(PageOptions\['LastHeardPage'\]\['LimitTo'\][[:blank:]]*\=[[:blank:]]*\)[[:digit:]]*/\1${LIMIT}/g" ${XLXCONFIG}
+LIMIT=$(env_int "${REPEATERS_LIMIT:-}" 99 1 999 REPEATERS_LIMIT)
+sed -i "s/\(PageOptions\['RepeatersPage'\]\['LimitTo'\][[:blank:]]*\=[[:blank:]]*\)[[:digit:]]*/\1${LIMIT}/g" ${XLXCONFIG}
+LIMIT=$(env_int "${PEERS_LIMIT:-}" 99 1 999 PEERS_LIMIT)
+sed -i "s/\(PageOptions\['PeerPage'\]\['LimitTo'\][[:blank:]]*\=[[:blank:]]*\)[[:digit:]]*/\1${LIMIT}/g" ${XLXCONFIG}
+
+REFRESH=$(env_int "${PAGE_REFRESH:-}" 10 0 3600 PAGE_REFRESH) # seconds, 0 = no auto-refresh
+if [ "${REFRESH}" -eq 0 ]; then
+  sed -i "s/\(PageOptions\['PageRefreshActive'\][[:blank:]]*\=[[:blank:]]*\)[[:alpha:]]*/\1false/g" ${XLXCONFIG}
+else
+  sed -i "s/\(PageOptions\['PageRefreshActive'\][[:blank:]]*\=[[:blank:]]*\)[[:alpha:]]*/\1true/g" ${XLXCONFIG}
+  sed -i "s/\(PageOptions\['PageRefreshDelay'\][[:blank:]]*\=[[:blank:]]*\)'[[:digit:]]*'/\1'$((REFRESH * 1000))'/g" ${XLXCONFIG}
+fi
+
+SHOW=$(env_bool "${REFLECTORS_PAGE:-}" true REFLECTORS_PAGE)
+sed -i "s/\(PageOptions\['ReflectorsPage'\]\['Show'\][[:blank:]]*\=[[:blank:]]*\)[[:alpha:]]*/\1${SHOW}/g" ${XLXCONFIG}
+SHOW=$(env_bool "${TRAFFIC_PAGE:-}" false TRAFFIC_PAGE) # the vnstatd service reads TRAFFIC_PAGE too
+sed -i "s/\(PageOptions\['Traffic'\]\['Show'\][[:blank:]]*\=[[:blank:]]*\)[[:alpha:]]*/\1${SHOW}/g" ${XLXCONFIG}
+SHOW=$(env_bool "${IRCDDB_PAGE:-}" false IRCDDB_PAGE)
+sed -i "s/\(PageOptions\['IRCDDB'\]\['Show'\][[:blank:]]*\=[[:blank:]]*\)[[:alpha:]]*/\1${SHOW}/g" ${XLXCONFIG}
+if [ -n "${IRCDDB_URL:-}" ]; then
+  # turn the shipped commented-out example into a live setting
+  sed -i "s|^//[[:blank:]]*\(\$PageOptions\['IRCDDB'\]\['URL'\][[:blank:]]*=[[:blank:]]*\)'[^']*'|\1'$(printf '%s' "${IRCDDB_URL}" | sed 's/[|&]/\\&/g')'|" ${XLXCONFIG}
+fi
 sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/peers.php # convert date format to US
 sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/repeaters.php # convert date format to US
 sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/traffic.php # convert date format to US

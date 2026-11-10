@@ -109,6 +109,22 @@ Give the container the USB devices, either with `privileged: true` or by passing
 | `MODULES` | `26` | Number of modules shown on the dashboard |
 | `MODULEA` .. `MODULEZ` | dashboard default | Module names on the dashboard. Use `<br>` for a line break, e.g. `HKC<br>BM 3166218`. Any other HTML is escaped. Unset keeps the dashboard default (`MODULES` is the count, so module S can't be named this way) |
 
+Dashboard pages and lists. Switches take `on`/`off` (also `true`/`false`, `enable`/`disable`, `yes`/`no`, `1`/`0`); every default is what the dashboard did before these existed. A value the image doesn't understand logs a `WARNING` and falls back to the default.
+
+| Variable | Default | Description |
+| :------- | :------ | :---------- |
+| `REFLECTORS_PAGE` | `on` | "Reflectors list" page and menu entry |
+| `IRCDDB_PAGE` | `off` | "D-Star live" page - live.ircddb.net, loaded through the dashboard's own proxy so it works on an https site |
+| `IRCDDB_URL` | `http://live.ircddb.net:8080` | ircDDB live server to proxy |
+| `TRAFFIC_PAGE` | `off` | "Traffic statistics" page; also starts `vnstatd` in the container to collect it (the container's `eth0` carries all reflector traffic). Mount `/var/lib/vnstat` to keep the history - see volumes |
+| `LASTHEARD_LIMIT` | `39` | Stations on the last-heard list (1-999) |
+| `REPEATERS_LIMIT` | `99` | Rows on the Repeaters / Nodes page (1-999) |
+| `PEERS_LIMIT` | `99` | Rows on the Peers page (1-999) |
+| `PAGE_REFRESH` | `10` | Dashboard auto-refresh in seconds (0-3600); `0` turns auto-refresh off |
+| `IP_DISPLAY` | `hide` | How much of a repeater / peer IP to show: `hide`, `last1`, `last2`, `last3` (bytes) or `full` |
+
+The YSF / NXDN / P25 peer pages aren't switchable: they read the logs of YSF / NXDN / P25 reflectors running on the same host under systemd, which a container doesn't have.
+
 The dashboard config is regenerated from these variables each time a new container is created, so change the stack instead of editing `config.inc.php`.
 
 ### 3. XLXd volumes
@@ -117,6 +133,7 @@ The dashboard config is regenerated from these variables each time a new contain
 | :---- | :------ |
 | `/config` | Files copied into `/xlxd` at every start: `xlxd.whitelist`, `xlxd.blacklist`, `xlxd.interlink`, `xlxd.terminal`, and the calling-home hash `callinghome.php`. `log/xlxd.xml` here is restored at start so the dashboard has history immediately. Note the start-up copy is `cp /config/*.* /xlxd`: every file with a dot in its name is copied, so a leftover `main.h.customized`, `cysfprotocol.cpp.customized` or `config.inc.php` from an older install overwrites the image's reference copies in `/xlxd`. xlxd doesn't read those (the dashboard config is regenerated from the environment), but they're misleading - keep `/config` to the files above |
 | `/var/www/xlxd/css/layout.css`, `/var/www/xlxd/img/<file>` | Optional dashboard theme - mount **single files** over the image's dashboard (see below) |
+| `/var/lib/vnstat` | Optional, with `TRAFFIC_PAGE=on`: the vnstat database, so traffic history survives a new container. Without it, history starts over on every re-create |
 
 Keep `callinghome.php` in `/config` once the reflector has called home: it holds the hash that identifies the reflector to the XLX network. After the first call home, copy it out with `docker cp xlxd:/xlxd/callinghome.php ./config/`.
 
