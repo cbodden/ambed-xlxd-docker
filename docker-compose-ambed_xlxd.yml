@@ -1,10 +1,14 @@
-## AMBEd + XLXd example
+## AMBEd + XLXd example (+ optional NXDN / P25 reflectors peered into XLXd)
 ##
 ## AMBEd needs the FTDI sticks free of the kernel serial drivers, on the host :
 ##   /etc/udev/rules.d/99-ambed.rules
 ##   ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", MODE="0666", RUN+="/bin/sh -c 'rmmod ftdi_sio && rmmod usbserial'"
 ##
-## images are also on ghcr.io/cbodden/{ambed,xlxd}-docker
+## the NXDN and P25 reflectors are switched on / off with one variable each (in .env / Portainer's
+## stack env, or the shell) - it starts the reflector AND adds its peer line to xlxd.interlink :
+##   NXDN_REFLECTOR=1   P25_REFLECTOR=1      (0 or unset = off)
+##
+## images are also on ghcr.io/cbodden/{ambed,xlxd,nxdnreflector,p25reflector}-docker
 
 services:
   ambed:
@@ -40,11 +44,25 @@ services:
       COMMENT: Hosted by XYZ123
       CALLHOME: "false"       # true registers the reflector with the xlx network
       TZ: UTC
-      MODULES: "4"            # modules shown on the dashboard
+      MODULES: "6"            # modules shown on the dashboard
       MODULEA: Int.           # module names, MODULEA..MODULEZ - <br> for a line break
       MODULEB: Regional
       MODULEC: National
       MODULED: Local<br>Ragchew
+      MODULEE: NXDN<br>31000
+      MODULEF: P25<br>31000
+      ## dashboard pages / lists - defaults shown
+      REFLECTORS_PAGE: "on"
+      IRCDDB_PAGE: "off"
+      TRAFFIC_PAGE: "off"     # on also needs the vnstat volume below to keep history
+      LASTHEARD_LIMIT: "39"
+      PAGE_REFRESH: "10"
+      IP_DISPLAY: "hide"
+      ## peers for the optional reflectors below : "<number> <host>:<port> <module>"
+      NXDN_PEER_ENABLED: "${NXDN_REFLECTOR:-0}"
+      NXDN_PEER: "31000 nxdnreflector:41400 E"
+      P25_PEER_ENABLED: "${P25_REFLECTOR:-0}"
+      P25_PEER: "31000 p25reflector:41000 F"
     ports:
       - 80:80/tcp             # dashboard
       - 8080:8080/tcp         # repnet
@@ -62,6 +80,32 @@ services:
       - 62030:62030/udp       # mmdvm
     volumes:
       - ./config:/config      # xlxd.whitelist / blacklist / interlink / terminal, callinghome.php
+      # - ./vnstat:/var/lib/vnstat   # traffic page history (TRAFFIC_PAGE on)
       ## optional dashboard theme - mount single files over the image's dashboard
       # - ./custom/layout.css:/var/www/xlxd/css/layout.css
       # - ./custom/header.jpg:/var/www/xlxd/img/header.jpg
+
+  ## optional NXDN reflector - NXDN radios / hotspots connect here, xlxd peers it onto module E
+  nxdnreflector:
+    container_name: nxdnreflector
+    hostname: nxdnreflector
+    image: cbodden/nxdnreflector-docker:latest
+    restart: unless-stopped
+    scale: ${NXDN_REFLECTOR:-0}
+    environment:
+      NXDN_TG: "31000"        # required - the reflector's number (1-65535), same as in NXDN_PEER
+      TZ: UTC
+    ports:
+      - 41400:41400/udp
+
+  ## optional P25 reflector - P25 radios / hotspots connect here, xlxd peers it onto module F
+  p25reflector:
+    container_name: p25reflector
+    hostname: p25reflector
+    image: cbodden/p25reflector-docker:latest
+    restart: unless-stopped
+    scale: ${P25_REFLECTOR:-0}
+    environment:
+      TZ: UTC
+    ports:
+      - 41000:41000/udp

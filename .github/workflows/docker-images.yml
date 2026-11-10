@@ -1,4 +1,4 @@
-## builds the AMBEd && XLXd images for amd64 + arm64 on native runners
+## builds the AMBEd, XLXd, NXDNReflector && P25Reflector images for amd64 + arm64 on native runners
 ## and pushes multi-arch tags to docker hub && ghcr
 ##   testing branch -> :test
 ##   main branch    -> :latest
@@ -12,6 +12,8 @@ on:
     paths:
       - 'AMBEd/**'
       - 'XLXd/**'
+      - 'NXDNReflector/**'
+      - 'P25Reflector/**'
       - '.github/workflows/docker-images.yml'
   schedule:
     - cron: '0 6 * * 1'   # weekly rebuild of main for base image updates
@@ -29,8 +31,10 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - { name: ambed-docker, context: AMBEd }
-          - { name: xlxd-docker,  context: XLXd }
+          - { name: ambed-docker,         context: AMBEd }
+          - { name: xlxd-docker,          context: XLXd }
+          - { name: nxdnreflector-docker, context: NXDNReflector }
+          - { name: p25reflector-docker,  context: P25Reflector }
         platform:
           ## amd64 runners can't always reach archive.ubuntu.com - use azure's mirror (AMBEd only, xlxd is alpine)
           - { arch: amd64, os: linux/amd64, runner: ubuntu-24.04, ubuntu_mirror: 'http://azure.archive.ubuntu.com/ubuntu' }
@@ -85,7 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [ambed-docker, xlxd-docker]
+        image: [ambed-docker, xlxd-docker, nxdnreflector-docker, p25reflector-docker]
     steps:
       - uses: actions/download-artifact@v4
         with:

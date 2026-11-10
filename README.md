@@ -1,6 +1,6 @@
 # AMBEd / XLXd docker images
 
-Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiprotocol reflector (`xlxd`) and its AMBE transcoder (`ambed`), built for x86_64 and ARM64.
+Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiprotocol reflector (`xlxd`) and its AMBE transcoder (`ambed`), plus optional NXDN and P25 reflectors to peer into it, built for x86_64 and ARM64.
 
 
 ## Images
@@ -9,6 +9,8 @@ Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiproto
 | :------ | :--------- | :--- | :------------ | :--------- |
 | AMBEd   | [cbodden/ambed-docker](https://hub.docker.com/r/cbodden/ambed-docker/tags) | `ghcr.io/cbodden/ambed-docker` | x86_64, ARM64/v8 | Ubuntu Latest |
 | XLXd    | [cbodden/xlxd-docker](https://hub.docker.com/r/cbodden/xlxd-docker/tags)   | `ghcr.io/cbodden/xlxd-docker`  | x86_64, ARM64/v8 | Alpine Latest |
+| NXDNReflector | [cbodden/nxdnreflector-docker](https://hub.docker.com/r/cbodden/nxdnreflector-docker/tags) | `ghcr.io/cbodden/nxdnreflector-docker` | x86_64, ARM64/v8 | Alpine Latest |
+| P25Reflector  | [cbodden/p25reflector-docker](https://hub.docker.com/r/cbodden/p25reflector-docker/tags)   | `ghcr.io/cbodden/p25reflector-docker`  | x86_64, ARM64/v8 | Alpine Latest |
 
 | Tag | Built from |
 | :-- | :--------- |
@@ -21,8 +23,9 @@ Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiproto
 - AMBEd: 1.4.0
 - XLXd: 2.6.1
 - Dashboard: 2.4.7 (upstream `dashboard1`)
+- NXDNReflector / P25Reflector: 20210912 (G4KLX - frozen, see [NXDN and P25 reflectors](#6-nxdn-and-p25-reflectors))
 - FTDI D2XX: 1.4.33
-- S6 Overlay: 3.2.1.0
+- S6 Overlay: 3.2.3.2
 - Alpine: Latest
 - Ubuntu: Latest
 
@@ -123,6 +126,17 @@ Dashboard pages and lists. Switches take `on`/`off` (also `true`/`false`, `enabl
 | `PAGE_REFRESH` | `10` | Dashboard auto-refresh in seconds (0-3600); `0` turns auto-refresh off |
 | `IP_DISPLAY` | `hide` | How much of a repeater / peer IP to show: `hide`, `last1`, `last2`, `last3` (bytes) or `full` |
 
+NXDN / P25 reflector peers - added to `xlxd.interlink` at every start (see [NXDN and P25 reflectors](#6-nxdn-and-p25-reflectors)):
+
+| Variable | Default | Description |
+| :------- | :------ | :---------- |
+| `NXDN_PEER` | - | `<number> <host>:<port> <module>`, e.g. `31000 nxdnreflector:41400 E` |
+| `NXDN_PEER_ENABLED` | `off` | Add the `NXDN_PEER` line |
+| `P25_PEER` | - | `<number> <host>:<port> <module>`, e.g. `31000 p25reflector:41000 F` |
+| `P25_PEER_ENABLED` | `off` | Add the `P25_PEER` line |
+
+A malformed value logs a `WARNING` and isn't added; a peer already in `/config/xlxd.interlink` is left as it is.
+
 The YSF / NXDN / P25 peer pages aren't switchable: they read the logs of YSF / NXDN / P25 reflectors running on the same host under systemd, which a container doesn't have.
 
 The dashboard config is regenerated from these variables each time a new container is created, so change the stack instead of editing `config.inc.php`.
@@ -157,6 +171,8 @@ Keep `callinghome.php` in `/config` once the reflector has called home: it holds
 | 62030 | UDP | MMDVM |
 | 10100 | UDP | AMBEd controller (ambed container) |
 | 10101-10199 | UDP | AMBEd transcoding streams (ambed container) |
+| 41400 | UDP | NXDN reflector (nxdnreflector container, optional) |
+| 41000 | UDP | P25 reflector (p25reflector container, optional) |
 
 Only publish (and forward on the firewall) the ports of the modes you serve; M17 on 17000/UDP needs AMBEd 1.4.0+ for Codec2 transcoding, which this image has.
 
@@ -169,6 +185,29 @@ These are compiled in, so changing them means building the image with `--build-a
 | `YSF_AUTOLINK_MODULE` | XLXd | `A` | Module a YSF client is linked to when it doesn't pick one (upstream 2.6 uses `B`) |
 | `IMRS_DEFAULT_MODULE` | XLXd | `A` | Default module for Yaesu IMRS (Wires-X) clients (upstream 2.6 uses `B`) |
 | `USE_AGC` | AMBEd | `0` | `1` turns on the DVSI chips' automatic gain control |
+
+### 6. NXDN and P25 reflectors
+
+XLXd 2.6.x can't take NXDN or P25 radios directly - it only peers with NXDN / P25 reflectors. These two optional images run [G4KLX](https://github.com/g4klx)'s NXDNReflector and P25Reflector so NXDN and P25 users have a way in: they connect to the reflector, and xlxd peers that reflector onto one XLX module (one module per reflector - they're single-room).
+
+- **NXDN** uses the same AMBE+2 codec as DMR / YSF - no transcoding.
+- **P25** uses IMBE: AMBEd 1.4.0 does it in software, plus 2 DVSI channels per P25 <-> DMR / D-Star stream, shared with the other transcoding.
+- **Frozen upstream:** G4KLX removed both reflectors from NXDNClients / P25Clients in Feb 2023. The images build the last commit that had them (version 20210912, `NXDN_GIT_REF` / `P25_GIT_REF`), so there's nothing for the upstream check to track.
+
+Switch each one on with a single variable (see [`docker-compose-ambed_xlxd.yml`](./docker-compose-ambed_xlxd.yml)): `NXDN_REFLECTOR=1` / `P25_REFLECTOR=1` sets the service's `scale` (0 = no container) **and** the xlxd peer's `*_PEER_ENABLED`, so turning a reflector off also stops xlxd trying to reach it. xlxd reaches the reflector by service name on the stack's network, so only the reflector's own port needs publishing / forwarding for outside users.
+
+| Variable | Image | Default | Description |
+| :------- | :---- | :------ | :---------- |
+| `NXDN_TG` | nxdnreflector | - | **Required.** The reflector's number / talkgroup (1-65535) - the same number goes in `NXDN_PEER` and in the NXDN host lists |
+| `NXDN_PORT` | nxdnreflector | `41400` | UDP port |
+| `NXDN_ID_URL` | nxdnreflector | radioid.net `nxdn.csv` | Id list for callsigns in the log; downloaded at start, the image has a fallback copy |
+| `P25_PORT` | p25reflector | `41000` | UDP port |
+| `P25_ID_URL` | p25reflector | pistar.uk `DMRIds.dat` | Id list (P25 uses DMR ids), downloaded at start, with a fallback copy |
+| `*_ID_RELOAD` | both | `24` | Hours between id list reloads (0 = never) |
+| `*_LOG_LEVEL` | both | `1` | 1 = everything .. 6 = fatal only, 0 = off |
+| `*_DEBUG` | both | `0` | `1` logs network packets |
+
+To be findable from a hotspot's NXDN / P25 menus, register the reflector's number, host and port with the host lists (they're published through [DVRef](https://dvref.com) / pistar.uk) - check the number is free first.
 
 
 ## Dashboard
@@ -197,7 +236,7 @@ Images are built by GitHub Actions ([`.github/workflows/docker-images.yml`](./.g
 | push a `vX.Y.Z` tag | `:X.Y.Z` |
 | weekly (Monday) | `:latest` rebuilt from `main` for base image updates |
 
-Only changes under `AMBEd/`, `XLXd/` or the workflow itself trigger a build. The workflow needs the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub personal access token with Read & Write).
+Only changes under `AMBEd/`, `XLXd/`, `NXDNReflector/`, `P25Reflector/` or the workflow itself trigger a build. The workflow needs the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub personal access token with Read & Write).
 
 Build notes:
 - ftdichip.com refuses scripted downloads, so the AMBEd build falls back to the libftd2xx 1.4.33 files in the previously published `cbodden/ambed-docker:latest` (`FTDI_FALLBACK_IMAGE`).
