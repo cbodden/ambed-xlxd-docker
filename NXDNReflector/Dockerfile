@@ -22,18 +22,21 @@ ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8" TZ="UTC"
 ## runtime settings - see README
 ENV NXDN_TG="" NXDN_PORT="41400" \
     NXDN_ID_URL="https://radioid.net/static/nxdn.csv" NXDN_ID_RELOAD="24" \
-    NXDN_LOG_LEVEL="1" NXDN_DEBUG="0"
+    NXDN_LOG_LEVEL="1" NXDN_DEBUG="0" \
+    NXDN_LOG_FILE="off" NXDN_LOG_FILE_LEVEL="2" NXDN_LOG_KEEP_DAYS="7"
 
 RUN apk add --no-cache libstdc++ libgcc curl tzdata \
     && adduser -D -H -s /sbin/nologin mmdvm \
-    && mkdir -p /nxdn /usr/local/share/nxdn \
-    && chown mmdvm:mmdvm /nxdn
+    && mkdir -p /nxdn /usr/local/share/nxdn /var/log/nxdnreflector \
+    && chown mmdvm:mmdvm /nxdn /var/log/nxdnreflector
 
 COPY --from=build /src/NXDNReflector/NXDNReflector /usr/local/bin/
 ## fallback id list (2022) for when radioid can't be reached at start
 COPY --from=build /src/NXDNReflector/NXDN.csv /usr/local/share/nxdn/NXDN.csv
 COPY --chmod=755 run.sh /usr/local/bin/run.sh
 
+## log files for the dashboard (NXDN_LOG_FILE=on) - share this volume with nxdndashboard
+VOLUME /var/log/nxdnreflector
 EXPOSE 41400/udp
 USER mmdvm
 WORKDIR /nxdn

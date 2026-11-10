@@ -18,6 +18,22 @@ need_int "${P25_ID_RELOAD}" 0 8760 P25_ID_RELOAD # hours, 0 = never reload
 need_int "${P25_LOG_LEVEL}" 0 6 P25_LOG_LEVEL    # 1 = debug .. 6 = fatal only, 0 = off
 need_int "${P25_DEBUG}" 0 1 P25_DEBUG
 
+## optional log files (for p25dashboard): dated files + a copy of the ini in /var/log/p25reflector
+LOGDIR=/var/log/p25reflector
+case "$(printf '%s' "${P25_LOG_FILE:-off}" | tr 'A-Z' 'a-z')" in
+  on|true|enable|enabled|yes|1)
+    need_int "${P25_LOG_FILE_LEVEL:-2}" 1 6 P25_LOG_FILE_LEVEL
+    need_int "${P25_LOG_KEEP_DAYS:-7}" 1 3650 P25_LOG_KEEP_DAYS
+    FILELEVEL=${P25_LOG_FILE_LEVEL:-2}
+    find "${LOGDIR}" -name 'P25Reflector-*.log' -mtime +"${P25_LOG_KEEP_DAYS:-7}" -delete 2> /dev/null || true
+    # prune once a day while running (the reflector exec's below, this keeps going alongside it)
+    ( while sleep 86400; do
+        find "${LOGDIR}" -name 'P25Reflector-*.log' -mtime +"${P25_LOG_KEEP_DAYS:-7}" -delete 2> /dev/null
+      done ) &
+    ;;
+  *) FILELEVEL=0 ;;
+esac
+
 ## id list (P25 radios use DMR ids) - only used to show callsigns in the log
 if curl -fsSL -m 60 -o DMRIds.dat.new "${P25_ID_URL}"; then
   mv DMRIds.dat.new DMRIds.dat
@@ -37,15 +53,18 @@ Time=${P25_ID_RELOAD}
 
 [Log]
 DisplayLevel=${P25_LOG_LEVEL}
-FileLevel=0
-FilePath=/p25
+FileLevel=${FILELEVEL}
+FilePath=${LOGDIR}
 FileRoot=P25Reflector
-FileRotate=0
+FileRotate=1
 
 [Network]
 Port=${P25_PORT}
 Debug=${P25_DEBUG}
 EOF
 
-echo "P25Reflector : UDP ${P25_PORT}"
+## the dashboard reads the ini next to the logs
+[ "${FILELEVEL}" -gt 0 ] && cp P25Reflector.ini "${LOGDIR}/P25Reflector.ini"
+
+echo "P25Reflector : UDP ${P25_PORT}$([ "${FILELEVEL}" -gt 0 ] && echo ", log files in ${LOGDIR}")"
 exec /usr/local/bin/P25Reflector /p25/P25Reflector.ini
