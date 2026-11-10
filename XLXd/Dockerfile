@@ -26,6 +26,7 @@ RUN --mount=type=cache,target=/var/cache/apk,sharing=locked \
     && apk add --update --no-cache \
         alpine-sdk build-base linux-headers \
         bash curl xz \
+        vnstat \
         apache2 apache2-utils \
         php84 php84-apache2 php84-common php84-curl php84-mbstring php84-session
 
@@ -76,6 +77,11 @@ RUN cat /src/sanitize_module_name.php >> ${XLXD_WEB_DIR}/pgs/functions.php \
         ${XLXD_WEB_DIR}/pgs/users.php ${XLXD_WEB_DIR}/pgs/modules.php \
     && grep -q "sanitize_module_name(" ${XLXD_WEB_DIR}/pgs/users.php \
     && grep -q "sanitize_module_name(" ${XLXD_WEB_DIR}/pgs/modules.php
+
+## upstream always shows the Reflectors list - add a ReflectorsPage['Show'] option (REFLECTORS_PAGE)
+## that the menu and the page switch honour; fails the build if upstream's markup moved
+COPY scripts/patch-dashboard.sh /src/patch-dashboard.sh
+RUN sh /src/patch-dashboard.sh ${XLXD_WEB_DIR}
 
 #################################
 ###### s6 overlay install  ######
@@ -162,11 +168,30 @@ EOF
 RUN touch /etc/s6-overlay/user-bundles.d/user/contents.d/customize
 
 ## copying the httpd customization script to /etc/s6-overlay/scripts/customize.sh
+## plus the env helpers it shares with vnstatd (dashboard switches: on/off, numbers, IP display)
 COPY --chmod=700 scripts/customize.sh /etc/s6-overlay/scripts/
+COPY --chmod=644 scripts/dashboard-env.sh /etc/s6-overlay/scripts/
 
-## register dependencies 
+## register dependencies
 RUN mkdir /etc/s6-overlay/s6-rc.d/customize/dependencies.d/ \
     && touch /etc/s6-overlay/s6-rc.d/customize/dependencies.d/base
+
+
+#### vnstatd ####
+
+## traffic collector for the dashboard's Traffic statistics page - idles unless TRAFFIC_PAGE is on
+COPY <<EOF /etc/s6-overlay/s6-rc.d/vnstatd/type
+longrun
+EOF
+
+COPY --chmod=700 scripts/vnstatd_run.sh /etc/s6-overlay/s6-rc.d/vnstatd/run
+
+## register vnstatd as a service for s6
+RUN touch /etc/s6-overlay/user-bundles.d/user/contents.d/vnstatd
+
+## register dependencies
+RUN mkdir /etc/s6-overlay/s6-rc.d/vnstatd/dependencies.d/ \
+    && touch /etc/s6-overlay/s6-rc.d/vnstatd/dependencies.d/base
 
 ###################################
 ###### s6 overlay config end ######
