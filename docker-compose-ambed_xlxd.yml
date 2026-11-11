@@ -7,8 +7,9 @@
 ## the NXDN and P25 reflectors are switched on / off with one variable each (in .env / Portainer's
 ## stack env, or the shell) - it starts the reflector AND adds its peer line to xlxd.interlink :
 ##   NXDN_REFLECTOR=1   P25_REFLECTOR=1      (0 or unset = off)
+## each reflector's dashboard follows it; NXDN_DASHBOARD=0 / P25_DASHBOARD=0 turns just the dashboard off
 ##
-## images are also on ghcr.io/cbodden/{ambed,xlxd,nxdnreflector,p25reflector}-docker
+## images are also on ghcr.io/cbodden/{ambed,xlxd,nxdnreflector,p25reflector,nxdndashboard,p25dashboard}-docker
 
 services:
   ambed:
@@ -94,7 +95,10 @@ services:
     scale: ${NXDN_REFLECTOR:-0}
     environment:
       NXDN_TG: "31000"        # required - the reflector's number (1-65535), same as in NXDN_PEER
+      NXDN_LOG_FILE: "on"     # log files for nxdndashboard
       TZ: UTC
+    volumes:
+      - nxdn-logs:/var/log/nxdnreflector
     ports:
       - 41400:41400/udp
 
@@ -106,6 +110,44 @@ services:
     restart: unless-stopped
     scale: ${P25_REFLECTOR:-0}
     environment:
+      P25_LOG_FILE: "on"      # log files for p25dashboard
       TZ: UTC
+    volumes:
+      - p25-logs:/var/log/p25reflector
     ports:
       - 41000:41000/udp
+
+  ## optional dashboards - follow their reflector's switch unless NXDN_DASHBOARD / P25_DASHBOARD is set
+  nxdndashboard:
+    container_name: nxdndashboard
+    image: cbodden/nxdndashboard-docker:latest
+    restart: unless-stopped
+    scale: ${NXDN_DASHBOARD:-${NXDN_REFLECTOR:-0}}
+    environment:
+      DASHBOARD_NAME: NXDN 31000
+      DASHBOARD_TAGLINE: XLX000 module E
+      # DASHBOARD_PATH: /nxdnreflector/   # when a reverse proxy serves it under a path
+      TZ: UTC
+    volumes:
+      - nxdn-logs:/var/log/nxdnreflector:ro
+    ports:
+      - 8081:80/tcp
+
+  p25dashboard:
+    container_name: p25dashboard
+    image: cbodden/p25dashboard-docker:latest
+    restart: unless-stopped
+    scale: ${P25_DASHBOARD:-${P25_REFLECTOR:-0}}
+    environment:
+      DASHBOARD_NAME: P25 31000
+      DASHBOARD_TAGLINE: XLX000 module F
+      # DASHBOARD_PATH: /p25reflector/
+      TZ: UTC
+    volumes:
+      - p25-logs:/var/log/p25reflector:ro
+    ports:
+      - 8082:80/tcp
+
+volumes:
+  nxdn-logs:
+  p25-logs:

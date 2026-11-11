@@ -11,6 +11,8 @@ Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiproto
 | XLXd    | [cbodden/xlxd-docker](https://hub.docker.com/r/cbodden/xlxd-docker/tags)   | `ghcr.io/cbodden/xlxd-docker`  | x86_64, ARM64/v8 | Alpine Latest |
 | NXDNReflector | [cbodden/nxdnreflector-docker](https://hub.docker.com/r/cbodden/nxdnreflector-docker/tags) | `ghcr.io/cbodden/nxdnreflector-docker` | x86_64, ARM64/v8 | Alpine Latest |
 | P25Reflector  | [cbodden/p25reflector-docker](https://hub.docker.com/r/cbodden/p25reflector-docker/tags)   | `ghcr.io/cbodden/p25reflector-docker`  | x86_64, ARM64/v8 | Alpine Latest |
+| NXDN dashboard | [cbodden/nxdndashboard-docker](https://hub.docker.com/r/cbodden/nxdndashboard-docker/tags) | `ghcr.io/cbodden/nxdndashboard-docker` | x86_64, ARM64/v8 | Alpine Latest |
+| P25 dashboard  | [cbodden/p25dashboard-docker](https://hub.docker.com/r/cbodden/p25dashboard-docker/tags)   | `ghcr.io/cbodden/p25dashboard-docker`  | x86_64, ARM64/v8 | Alpine Latest |
 
 | Tag | Built from |
 | :-- | :--------- |
@@ -24,6 +26,7 @@ Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiproto
 - XLXd: 2.6.1
 - Dashboard: 2.4.7 (upstream `dashboard1`)
 - NXDNReflector / P25Reflector: 20210912 (G4KLX - frozen, see [NXDN and P25 reflectors](#6-nxdn-and-p25-reflectors))
+- NXDN / P25 reflector dashboards: ShaYmez Dashboard2 2.0.3
 - FTDI D2XX: 1.4.33
 - S6 Overlay: 3.2.3.2
 - Alpine: Latest
@@ -173,6 +176,7 @@ Keep `callinghome.php` in `/config` once the reflector has called home: it holds
 | 10101-10199 | UDP | AMBEd transcoding streams (ambed container) |
 | 41400 | UDP | NXDN reflector (nxdnreflector container, optional) |
 | 41000 | UDP | P25 reflector (p25reflector container, optional) |
+| 8081 / 8082 | TCP | NXDN / P25 reflector dashboards (optional, usually behind a reverse proxy) |
 
 Only publish (and forward on the firewall) the ports of the modes you serve; M17 on 17000/UDP needs AMBEd 1.4.0+ for Codec2 transcoding, which this image has.
 
@@ -209,6 +213,52 @@ Switch each one on with a single variable (see [`docker-compose-ambed_xlxd.yml`]
 
 To be findable from a hotspot's NXDN / P25 menus, register the reflector's number, host and port with the host lists (they're published through [DVRef](https://dvref.com) / pistar.uk) - check the number is free first.
 
+Optional log files for the dashboards below (both reflectors, `NXDN_` / `P25_` prefix):
+
+| Variable | Default | Description |
+| :------- | :------ | :---------- |
+| `*_LOG_FILE` | `off` | `on` writes dated log files plus a copy of the ini to `/var/log/nxdnreflector` / `/var/log/p25reflector` - share that volume with the dashboard |
+| `*_LOG_FILE_LEVEL` | `2` | File log level (2 = messages - what the dashboards read) |
+| `*_LOG_KEEP_DAYS` | `7` | Log files older than this are deleted (at start and daily) |
+
+### 7. NXDN and P25 reflector dashboards
+
+`nxdndashboard` / `p25dashboard` serve [ShaYmez](https://github.com/ShaYmez)'s [NXDNReflector-Dashboard2](https://github.com/ShaYmez/NXDNReflector-Dashboard2) / [P25Reflector-Dashboard2](https://github.com/ShaYmez/P25Reflector-Dashboard2) (GPL-3.0, pinned by `DASH_GIT_REF`): linked repeaters / hotspots, last heard, live TX. They read the reflector's log files and ini, so turn on `*_LOG_FILE` on the reflector and mount the same volume read-only into the dashboard (see [`docker-compose-ambed_xlxd.yml`](./docker-compose-ambed_xlxd.yml)). The config comes from the environment instead of the dashboard's setup wizard, which is removed. Linked repeaters show up after the reflector's next "Currently linked repeaters" log line (every couple of minutes).
+
+| Variable | Default | Description |
+| :------- | :------ | :---------- |
+| `DASHBOARD_PORT` | `80` | Port Apache listens on in the container |
+| `DASHBOARD_PATH` | `/` | Public path when served under a reverse-proxy prefix, e.g. `/nxdnreflector/` (the proxy strips it; this keeps the canonical / social links right) |
+| `DASHBOARD_NAME` | `NXDN Reflector Dashboard` / `P25 Reflector Dashboard` | Header and page title |
+| `DASHBOARD_TAGLINE` | - | Line under the name |
+| `DASHBOARD_LOGO` | - | Logo file in `img/` (mount your own over `/var/www/dashboard/img/<file>`) |
+| `SHOW_QRZ` | `off` | Link callsigns to QRZ.com |
+| `GDPR` | `off` | Anonymise callsigns |
+| `LAST_HEARD_FIRST` | `off` | Last heard above the linked list |
+| `SHOW_SYSTEM_INFO` | `off` | Uptime / load / disk panel (in a container it describes the container) |
+| `SHOW_PROGRESS_BARS` | `on` | Progress bars in the system panel |
+| `SHOW_OLD_MHEARD` | `7` | Days of last-heard history to show |
+| `TZ` | `UTC` | Time zone for the dashboard's times |
+
+Behind a reverse proxy on a sub-path, strip the prefix and redirect the bare path to the one with a trailing slash (the dashboard uses relative links). Traefik example for `xlx.example.com/nxdnreflector/`:
+
+```yaml
+http:
+  routers:
+    xlx-nxdn:
+      rule: "Host(`xlx.example.com`) && PathPrefix(`/nxdnreflector`)"
+      middlewares: [xlx-nxdn-slash, xlx-nxdn-strip]
+      service: xlx-nxdn
+  middlewares:
+    xlx-nxdn-slash:
+      redirectRegex: { regex: "^(https?://[^/]+/nxdnreflector)$", replacement: "${1}/", permanent: true }
+    xlx-nxdn-strip:
+      stripPrefix: { prefixes: ["/nxdnreflector"] }
+  services:
+    xlx-nxdn:
+      loadBalancer: { servers: [{ url: "http://docker-host:8081" }] }
+```
+
 
 ## Dashboard
 
@@ -236,7 +286,7 @@ Images are built by GitHub Actions ([`.github/workflows/docker-images.yml`](./.g
 | push a `vX.Y.Z` tag | `:X.Y.Z` |
 | weekly (Monday) | `:latest` rebuilt from `main` for base image updates |
 
-Only changes under `AMBEd/`, `XLXd/`, `NXDNReflector/`, `P25Reflector/` or the workflow itself trigger a build. The workflow needs the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub personal access token with Read & Write).
+Only changes under `AMBEd/`, `XLXd/`, `NXDNReflector/`, `P25Reflector/`, `NXDNDashboard/`, `P25Dashboard/` or the workflow itself trigger a build. The workflow needs the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub personal access token with Read & Write).
 
 Build notes:
 - ftdichip.com refuses scripted downloads, so the AMBEd build falls back to the libftd2xx 1.4.33 files in the previously published `cbodden/ambed-docker:latest` (`FTDI_FALLBACK_IMAGE`).

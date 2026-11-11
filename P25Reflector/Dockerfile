@@ -22,18 +22,21 @@ ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8" TZ="UTC"
 ## runtime settings - see README
 ENV P25_PORT="41000" \
     P25_ID_URL="https://www.pistar.uk/downloads/DMRIds.dat" P25_ID_RELOAD="24" \
-    P25_LOG_LEVEL="1" P25_DEBUG="0"
+    P25_LOG_LEVEL="1" P25_DEBUG="0" \
+    P25_LOG_FILE="off" P25_LOG_FILE_LEVEL="2" P25_LOG_KEEP_DAYS="7"
 
 RUN apk add --no-cache libstdc++ libgcc curl tzdata \
     && adduser -D -H -s /sbin/nologin mmdvm \
-    && mkdir -p /p25 /usr/local/share/p25 \
-    && chown mmdvm:mmdvm /p25
+    && mkdir -p /p25 /usr/local/share/p25 /var/log/p25reflector \
+    && chown mmdvm:mmdvm /p25 /var/log/p25reflector
 
 COPY --from=build /src/P25Reflector/P25Reflector /usr/local/bin/
 ## fallback id list for when the download fails at start
 COPY --from=build /src/P25Reflector/DMRIds.dat /usr/local/share/p25/DMRIds.dat
 COPY --chmod=755 run.sh /usr/local/bin/run.sh
 
+## log files for the dashboard (P25_LOG_FILE=on) - share this volume with p25dashboard
+VOLUME /var/log/p25reflector
 EXPOSE 41000/udp
 USER mmdvm
 WORKDIR /p25
