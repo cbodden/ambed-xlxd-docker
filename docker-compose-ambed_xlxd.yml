@@ -1,15 +1,15 @@
-## AMBEd + XLXd example (+ optional NXDN / P25 reflectors peered into XLXd)
+## AMBEd + XLXd example (+ optional NXDN / P25 / YSF reflectors peered into XLXd)
 ##
 ## AMBEd needs the FTDI sticks free of the kernel serial drivers, on the host :
 ##   /etc/udev/rules.d/99-ambed.rules
 ##   ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", MODE="0666", RUN+="/bin/sh -c 'rmmod ftdi_sio && rmmod usbserial'"
 ##
-## the NXDN and P25 reflectors are switched on / off with one variable each (in .env / Portainer's
+## the NXDN, P25 and YSF reflectors are switched on / off with one variable each (in .env / Portainer's
 ## stack env, or the shell) - it starts the reflector AND adds its peer line to xlxd.interlink :
-##   NXDN_REFLECTOR=1   P25_REFLECTOR=1      (0 or unset = off)
-## each reflector's dashboard follows it; NXDN_DASHBOARD=0 / P25_DASHBOARD=0 turns just the dashboard off
+##   NXDN_REFLECTOR=1   P25_REFLECTOR=1   YSF_REFLECTOR=1      (0 or unset = off)
+## each reflector's dashboard follows it; NXDN_DASHBOARD=0 / P25_DASHBOARD=0 / YSF_DASHBOARD=0 turns just the dashboard off
 ##
-## images are also on ghcr.io/cbodden/{ambed,xlxd,nxdnreflector,p25reflector,nxdndashboard,p25dashboard}-docker
+## images are also on ghcr.io/cbodden/{ambed,xlxd,nxdnreflector,p25reflector,nxdndashboard,p25dashboard,ysfreflector,ysfdashboard}-docker
 
 services:
   ambed:
@@ -64,6 +64,8 @@ services:
       NXDN_PEER: "31000 nxdnreflector:41400 E"
       P25_PEER_ENABLED: "${P25_REFLECTOR:-0}"
       P25_PEER: "31000 p25reflector:41000 F"
+      YSF_PEER_ENABLED: "${YSF_REFLECTOR:-0}"
+      YSF_PEER: "12345 ysfreflector:42000 A"   # your YSF registry id once registered
     ports:
       - 80:80/tcp             # dashboard
       - 8080:8080/tcp         # repnet
@@ -77,7 +79,7 @@ services:
       - 30001:30001/udp       # dextra
       - 30051:30051/udp       # dcs
       - 40000:40000/udp       # icom terminal dv
-      - 42000:42000/udp       # ysf
+      - 42000:42000/udp       # ysf (xlxd's own - the ysfreflector below is another port)
       - 62030:62030/udp       # mmdvm
     volumes:
       - ./config:/config      # xlxd.whitelist / blacklist / interlink / terminal, callinghome.php
@@ -148,6 +150,35 @@ services:
     ports:
       - 8082:80/tcp
 
+  ## optional YSF reflector (pYSFReflector3) - a registered YSF room, xlxd peers it onto module A
+  ysfreflector:
+    container_name: ysfreflector
+    hostname: ysfreflector
+    image: cbodden/ysfreflector-docker:latest
+    restart: unless-stopped
+    scale: ${YSF_REFLECTOR:-0}
+    environment:
+      YSF_NAME: XLX000-XYZ123   # required - registry name, 16 characters max
+      YSF_DESCRIPTION: XLX000 mod A # 14 characters max
+      YSF_ID: "0"             # your registry id once registered (same number as in YSF_PEER)
+      TZ: UTC
+    volumes:
+      - ysf-data:/opt/pysfreflector       # deny list, home db, last DG-ID per gateway
+    ports:
+      - 41500:42000/udp       # public port != xlxd's 42000
+
+  ysfdashboard:
+    container_name: ysfdashboard
+    image: cbodden/ysfdashboard-docker:latest
+    restart: unless-stopped
+    scale: ${YSF_DASHBOARD:-${YSF_REFLECTOR:-0}}
+    environment:
+      YSF_JSON_HOST: ysfreflector
+      TZ: UTC
+    ports:
+      - 8083:80/tcp
+
 volumes:
   nxdn-logs:
   p25-logs:
+  ysf-data:

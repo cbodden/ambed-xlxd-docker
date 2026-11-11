@@ -1,4 +1,4 @@
-## builds the AMBEd, XLXd, NXDN / P25 reflector && dashboard images for amd64 + arm64 on native runners
+## builds the AMBEd, XLXd, NXDN / P25 / YSF reflector && dashboard images for amd64 + arm64 on native runners
 ## and pushes multi-arch tags to docker hub && ghcr
 ##   testing branch -> :test
 ##   main branch    -> :latest
@@ -16,6 +16,8 @@ on:
       - 'P25Reflector/**'
       - 'NXDNDashboard/**'
       - 'P25Dashboard/**'
+      - 'YSFReflector/**'
+      - 'YSFDashboard/**'
       - '.github/workflows/docker-images.yml'
   schedule:
     - cron: '0 6 * * 1'   # weekly rebuild of main for base image updates
@@ -39,6 +41,8 @@ jobs:
           - { name: p25reflector-docker,  context: P25Reflector }
           - { name: nxdndashboard-docker, context: NXDNDashboard }
           - { name: p25dashboard-docker,  context: P25Dashboard }
+          - { name: ysfreflector-docker,  context: YSFReflector }
+          - { name: ysfdashboard-docker,  context: YSFDashboard }
         platform:
           ## amd64 runners can't always reach archive.ubuntu.com - use azure's mirror (AMBEd only, xlxd is alpine)
           - { arch: amd64, os: linux/amd64, runner: ubuntu-24.04, ubuntu_mirror: 'http://azure.archive.ubuntu.com/ubuntu' }
@@ -93,7 +97,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [ambed-docker, xlxd-docker, nxdnreflector-docker, p25reflector-docker, nxdndashboard-docker, p25dashboard-docker]
+        image: [ambed-docker, xlxd-docker, nxdnreflector-docker, p25reflector-docker, nxdndashboard-docker, p25dashboard-docker, ysfreflector-docker, ysfdashboard-docker]
     steps:
       - uses: actions/download-artifact@v4
         with:
