@@ -1,6 +1,6 @@
 # AMBEd / XLXd docker images
 
-Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiprotocol reflector (`xlxd`) and its AMBE transcoder (`ambed`), plus optional NXDN and P25 reflectors to peer into it, built for x86_64 and ARM64.
+Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiprotocol reflector (`xlxd`) and its AMBE transcoder (`ambed`), plus optional NXDN, P25 and YSF reflectors to peer into it, built for x86_64 and ARM64.
 
 
 ## Images
@@ -13,6 +13,8 @@ Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiproto
 | P25Reflector  | [cbodden/p25reflector-docker](https://hub.docker.com/r/cbodden/p25reflector-docker/tags)   | `ghcr.io/cbodden/p25reflector-docker`  | x86_64, ARM64/v8 | Alpine Latest |
 | NXDN dashboard | [cbodden/nxdndashboard-docker](https://hub.docker.com/r/cbodden/nxdndashboard-docker/tags) | `ghcr.io/cbodden/nxdndashboard-docker` | x86_64, ARM64/v8 | Alpine Latest |
 | P25 dashboard  | [cbodden/p25dashboard-docker](https://hub.docker.com/r/cbodden/p25dashboard-docker/tags)   | `ghcr.io/cbodden/p25dashboard-docker`  | x86_64, ARM64/v8 | Alpine Latest |
+| YSFReflector   | [cbodden/ysfreflector-docker](https://hub.docker.com/r/cbodden/ysfreflector-docker/tags)   | `ghcr.io/cbodden/ysfreflector-docker`  | x86_64, ARM64/v8 | Alpine Latest |
+| YSF dashboard  | [cbodden/ysfdashboard-docker](https://hub.docker.com/r/cbodden/ysfdashboard-docker/tags)   | `ghcr.io/cbodden/ysfdashboard-docker`  | x86_64, ARM64/v8 | Alpine Latest |
 
 | Tag | Built from |
 | :-- | :--------- |
@@ -27,6 +29,7 @@ Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiproto
 - Dashboard: 2.4.7 (upstream `dashboard1`)
 - NXDNReflector / P25Reflector: 20210912 (G4KLX - frozen, see [NXDN and P25 reflectors](#6-nxdn-and-p25-reflectors))
 - NXDN / P25 reflector dashboards: ShaYmez Dashboard2 2.0.3
+- YSFReflector + dashboard: IU5JAE pYSFReflector3 20260414 (see [YSF reflector](#8-ysf-reflector-and-dashboard))
 - FTDI D2XX: 1.4.33
 - S6 Overlay: 3.2.3.2
 - Alpine: Latest
@@ -129,7 +132,7 @@ Dashboard pages and lists. Switches take `on`/`off` (also `true`/`false`, `enabl
 | `PAGE_REFRESH` | `10` | Dashboard auto-refresh in seconds (0-3600); `0` turns auto-refresh off |
 | `IP_DISPLAY` | `hide` | How much of a repeater / peer IP to show: `hide`, `last1`, `last2`, `last3` (bytes) or `full` |
 
-NXDN / P25 reflector peers - added to `xlxd.interlink` at every start (see [NXDN and P25 reflectors](#6-nxdn-and-p25-reflectors)):
+NXDN / P25 / YSF reflector peers - added to `xlxd.interlink` at every start (see [NXDN and P25 reflectors](#6-nxdn-and-p25-reflectors), [YSF reflector](#8-ysf-reflector-and-dashboard)):
 
 | Variable | Default | Description |
 | :------- | :------ | :---------- |
@@ -137,6 +140,8 @@ NXDN / P25 reflector peers - added to `xlxd.interlink` at every start (see [NXDN
 | `NXDN_PEER_ENABLED` | `off` | Add the `NXDN_PEER` line |
 | `P25_PEER` | - | `<number> <host>:<port> <module>`, e.g. `31000 p25reflector:41000 F` |
 | `P25_PEER_ENABLED` | `off` | Add the `P25_PEER` line |
+| `YSF_PEER` | - | `<number> <host>:<port> <module>`, e.g. `12345 ysfreflector:42000 A` - the number (1-99999) is the YSF reflector's registry id |
+| `YSF_PEER_ENABLED` | `off` | Add the `YSF_PEER` line |
 
 A malformed value logs a `WARNING` and isn't added; a peer already in `/config/xlxd.interlink` is left as it is.
 
@@ -176,7 +181,8 @@ Keep `callinghome.php` in `/config` once the reflector has called home: it holds
 | 10101-10199 | UDP | AMBEd transcoding streams (ambed container) |
 | 41400 | UDP | NXDN reflector (nxdnreflector container, optional) |
 | 41000 | UDP | P25 reflector (p25reflector container, optional) |
-| 8081 / 8082 | TCP | NXDN / P25 reflector dashboards (optional, usually behind a reverse proxy) |
+| 41500 | UDP | YSF reflector (ysfreflector container, optional - container port 42000) |
+| 8081 / 8082 / 8083 | TCP | NXDN / P25 / YSF reflector dashboards (optional, usually behind a reverse proxy) |
 
 Only publish (and forward on the firewall) the ports of the modes you serve; M17 on 17000/UDP needs AMBEd 1.4.0+ for Codec2 transcoding, which this image has.
 
@@ -258,6 +264,43 @@ http:
     xlx-nxdn:
       loadBalancer: { servers: [{ url: "http://docker-host:8081" }] }
 ```
+
+### 8. YSF reflector and dashboard
+
+xlxd already takes YSF hotspots directly (port 42000, autolinked to module A - see [build options](#5-build-time-options)), but it isn't a YSF *room*: it doesn't show up in the YSF registry / hotspot host lists under its own name. The optional `ysfreflector` image runs [IU5JAE](https://github.com/iu5jae)'s [pYSFReflector3](https://github.com/iu5jae/pYSFReflector3) (GPL-3.0, pinned by `PYSF_GIT_REF` - G4KLX's YSFReflector was removed upstream in Feb 2023) as a registered YSF reflector, and xlxd peers it onto one module like the NXDN / P25 reflectors. YSF uses AMBE+2 like DMR / NXDN, so no transcoding.
+
+Switch it on with `YSF_REFLECTOR=1` (service `scale` **and** xlxd's `YSF_PEER_ENABLED`, see [`docker-compose-ambed_xlxd.yml`](./docker-compose-ambed_xlxd.yml)). It listens on 42000 in the container, so publish it on another host port (the example uses 41500) - xlxd keeps 42000 and reaches the reflector by service name.
+
+| Variable | Default | Description |
+| :------- | :------ | :---------- |
+| `YSF_NAME` | - | **Required.** Registry name (16 characters max - longer is cut with a warning) |
+| `YSF_DESCRIPTION` | `YSF_NAME` | Registry description (14 characters max) |
+| `YSF_ID` | `0` | Registry id answered in status polls. `0` = computed from `YSF_NAME` with the YSF registry's own hash, so it normally matches the id the registry assigns - the start-up status poll shows it (`YSFS<id><name>...`) |
+| `YSF_CONTACT` / `YSF_WEB` | - | Contact e-mail / web site shown on the dashboard (`YSF_WEB` without `http://` - the dashboard adds it) |
+| `YSF_PORT` | `42000` | UDP port in the container |
+| `YSF_JSON_PORT` | `42223` | UDP port of the json feed the dashboard reads (stack network only - don't publish it) |
+| `YSF_DGID_LIST` | `1,9,50` | DG-IDs allowed on the reflector |
+| `YSF_DGID_DEFAULT` | `50` | DG-ID a gateway lands on, and that radios on DG-ID 00 use - the XLX peer is here too |
+| `YSF_DGID_LOCAL` | `1` | DG-ID that stays on the user's own repeater |
+| `YSF_TIMEOUT` | `190` | Transmit timeout in seconds |
+| `YSF_CHECK_CALLSIGN` | `on` | Drop transmissions whose callsign doesn't look like one |
+| `YSF_APRS` | `off` | Send positions to APRS-IS (`YSF_APRS_SERVER`, `YSF_APRS_PORT`, `YSF_APRS_SSID`) |
+| `YSF_LOG_LEVEL` | `1` | 0 = everything, 1 = normal, 2-4 = less, 5 = nothing. The log goes to dated (UTC) files in `/var/log/ysfreflector`, which `docker logs` follows |
+| `YSF_LOG_KEEP_DAYS` | `7` | Log files older than this are deleted (at start and daily) |
+
+Mount `/opt/pysfreflector` to keep the deny list (`deny.db`, see upstream's `ACL_rules.txt`), the return-home list (`home.db`) and each gateway's last DG-ID across re-creates. Both `.db` files are seeded on first start and are yours to edit after that.
+
+Register the reflector at [register.ysfreflector.de](https://register.ysfreflector.de) with its public host and port; it then reaches the YSF host lists that hotspots download. Use its id as the `YSF_PEER` number (it's only a label on the XLX peers page), and set `YSF_ID` only if the registry's id differs from the computed one.
+
+`ysfdashboard` serves pYSF3's own dashboard (IK5XMK's collector + pages): last heard, linked gateways with their DG-ID, blocked calls. Its collector reads the reflector's json feed into SQLite, so it only needs the reflector's address - no shared volume. Linked gateways show up after the reflector's next list (every 2 minutes).
+
+| Variable | Default | Description |
+| :------- | :------ | :---------- |
+| `YSF_JSON_HOST` | `ysfreflector` | Reflector service / container name |
+| `YSF_JSON_PORT` | `42223` | Reflector json port |
+| `DASHBOARD_PORT` | `80` | Port Apache listens on in the container |
+
+Its links are relative, so it works under a reverse-proxy sub-path the same way as the NXDN / P25 dashboards above.
 
 
 ## Dashboard
