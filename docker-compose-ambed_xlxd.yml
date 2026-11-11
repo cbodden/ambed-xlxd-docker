@@ -160,7 +160,7 @@ services:
     environment:
       YSF_NAME: XLX000-XYZ123   # required - registry name, 16 characters max
       YSF_DESCRIPTION: XLX000 mod A # 14 characters max
-      YSF_ID: "0"             # your registry id once registered (same number as in YSF_PEER)
+      YSF_ID: "0"             # 0 = hashed from YSF_NAME like the registry does; set it only if the registry differs
       TZ: UTC
     volumes:
       - ysf-data:/opt/pysfreflector       # deny list, home db, last DG-ID per gateway

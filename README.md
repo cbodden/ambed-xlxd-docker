@@ -275,7 +275,7 @@ Switch it on with `YSF_REFLECTOR=1` (service `scale` **and** xlxd's `YSF_PEER_EN
 | :------- | :------ | :---------- |
 | `YSF_NAME` | - | **Required.** Registry name (16 characters max - longer is cut with a warning) |
 | `YSF_DESCRIPTION` | `YSF_NAME` | Registry description (14 characters max) |
-| `YSF_ID` | `0` | Registry id, answered in status polls - set it once registered |
+| `YSF_ID` | `0` | Registry id answered in status polls. `0` = computed from `YSF_NAME` with the YSF registry's own hash, so it normally matches the id the registry assigns - the start-up status poll shows it (`YSFS<id><name>...`) |
 | `YSF_CONTACT` / `YSF_WEB` | - | Contact e-mail / web site shown on the dashboard (`YSF_WEB` without `http://` - the dashboard adds it) |
 | `YSF_PORT` | `42000` | UDP port in the container |
 | `YSF_JSON_PORT` | `42223` | UDP port of the json feed the dashboard reads (stack network only - don't publish it) |
@@ -290,7 +290,7 @@ Switch it on with `YSF_REFLECTOR=1` (service `scale` **and** xlxd's `YSF_PEER_EN
 
 Mount `/opt/pysfreflector` to keep the deny list (`deny.db`, see upstream's `ACL_rules.txt`), the return-home list (`home.db`) and each gateway's last DG-ID across re-creates. Both `.db` files are seeded on first start and are yours to edit after that.
 
-Register the reflector at [register.ysfreflector.de](https://register.ysfreflector.de) with its public host and port; the assigned id goes in `YSF_ID` and in `YSF_PEER`. It then reaches the YSF host lists that hotspots download.
+Register the reflector at [register.ysfreflector.de](https://register.ysfreflector.de) with its public host and port; it then reaches the YSF host lists that hotspots download. Use its id as the `YSF_PEER` number (it's only a label on the XLX peers page), and set `YSF_ID` only if the registry's id differs from the computed one.
 
 `ysfdashboard` serves pYSF3's own dashboard (IK5XMK's collector + pages): last heard, linked gateways with their DG-ID, blocked calls. Its collector reads the reflector's json feed into SQLite, so it only needs the reflector's address - no shared volume. Linked gateways show up after the reflector's next list (every 2 minutes).
 
