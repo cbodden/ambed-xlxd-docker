@@ -18,6 +18,7 @@ on:
       - 'P25Dashboard/**'
       - 'YSFReflector/**'
       - 'YSFDashboard/**'
+      - 'YSFDashboard2/**'
       - '.github/workflows/docker-images.yml'
   schedule:
     - cron: '0 6 * * 1'   # weekly rebuild of main for base image updates
@@ -43,6 +44,7 @@ jobs:
           - { name: p25dashboard-docker,  context: P25Dashboard }
           - { name: ysfreflector-docker,  context: YSFReflector }
           - { name: ysfdashboard-docker,  context: YSFDashboard }
+          - { name: ysfdashboard2-docker, context: YSFDashboard2 }
         platform:
           ## amd64 runners can't always reach archive.ubuntu.com - use azure's mirror (AMBEd only, xlxd is alpine)
           - { arch: amd64, os: linux/amd64, runner: ubuntu-24.04, ubuntu_mirror: 'http://azure.archive.ubuntu.com/ubuntu' }
@@ -97,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [ambed-docker, xlxd-docker, nxdnreflector-docker, p25reflector-docker, nxdndashboard-docker, p25dashboard-docker, ysfreflector-docker, ysfdashboard-docker]
+        image: [ambed-docker, xlxd-docker, nxdnreflector-docker, p25reflector-docker, nxdndashboard-docker, p25dashboard-docker, ysfreflector-docker, ysfdashboard-docker, ysfdashboard2-docker]
     steps:
       - uses: actions/download-artifact@v4
         with:

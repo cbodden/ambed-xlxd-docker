@@ -32,7 +32,7 @@ RUN cp /src/pysf/YSFReflector /src/pysf/*.py /usr/local/lib/pysfreflector/ \
 COPY --chmod=755 run.sh /usr/local/bin/run.sh
 
 ## /opt/pysfreflector : dg-id memory, home db, deny list (deny.db / home.db are seeded on first start - edit deny.db to block calls)
-## /var/log/ysfreflector : dated log files
+## /var/log/ysfreflector : dated log files + YSFReflector.ini (for ysfdashboard2)
 EXPOSE 42000/udp
 USER mmdvm
 WORKDIR /opt/pysfreflector

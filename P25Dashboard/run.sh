@@ -1,5 +1,5 @@
 #!/bin/sh
-## shared by nxdndashboard / p25dashboard (DASH_KIND=NXDN|P25): write the dashboard's config/config.php
+## shared by nxdndashboard / p25dashboard / ysfdashboard2 (DASH_KIND=NXDN|P25|YSF): write the dashboard's config/config.php
 ## from the environment (instead of its setup wizard), point apache at it, run apache in the foreground
 set -eu
 KIND=${DASH_KIND}
@@ -51,7 +51,8 @@ cat > "${WEB}/config/config.php" <<EOF
  * ${KIND}Reflector-Dashboard2 configuration - written by the container at start from its environment
  */
 
-date_default_timezone_set('${TZ_NAME}');
+// the reflector's log lines and dated file names are UTC: php parses them in UTC, TIMEZONE is only for display
+date_default_timezone_set('UTC');
 
 define("${KIND}REFLECTORLOGPATH", "${LOGDIR}/");
 define("${KIND}REFLECTORLOGPREFIX", "${KIND}Reflector");
@@ -79,7 +80,7 @@ sed -i "s/^Listen .*/Listen ${PORT}/" /etc/apache2/httpd.conf
 mkdir -p /run/apache2
 
 [ -d "${LOGDIR}" ] && ls "${LOGDIR}"/"${KIND}"Reflector-*.log > /dev/null 2>&1 \
-  || echo "WARNING : no ${KIND}Reflector log files in ${LOGDIR} yet - turn on ${KIND}_LOG_FILE on the reflector and share its log volume"
+  || echo "WARNING : no ${KIND}Reflector log files in ${LOGDIR} yet - share the reflector's log volume$([ "${KIND}" = YSF ] || echo " and turn on ${KIND}_LOG_FILE") (normal for a few seconds after a fresh start)"
 
 echo "${KIND}Reflector-Dashboard2 on port ${PORT} (public path ${BASEPATH}), reading ${LOGDIR}"
 exec httpd -D FOREGROUND

@@ -120,6 +120,31 @@ bth_time = 900.0
 refl_01 =
 EOF
 
-echo "pYSFReflector3 : '${NAME}' (id ${YSF_ID}) on UDP ${YSF_PORT}, json ${YSF_JSON_PORT}, DG-IDs ${YSF_DGID_LIST} (default ${YSF_DGID_DEFAULT})"
+## id 0 = pYSF3 hashes the name like the registry does (its CalcID) - work it out too, for the dashboard / log
+ID=${YSF_ID}
+[ "${ID}" -ne 0 ] || ID=$(python3 -c '
+import sys
+u = 0
+for a in sys.argv[1].strip().ljust(16):
+    u = (u + ord(a)) & 0xFFFFFFFF
+    u = (u + (u << 10) & 0xFFFFFFFF) & 0xFFFFFFFF
+    u = (u ^ (u >> 6)) & 0xFFFFFFFF
+u = (u + (u << 3) & 0xFFFFFFFF) & 0xFFFFFFFF
+u = (u ^ (u >> 11)) & 0xFFFFFFFF
+u = (u + (u << 15) & 0xFFFFFFFF) & 0xFFFFFFFF
+print(u % 100000)' "${NAME}")
+
+## ysfdashboard2 reads a G4KLX style YSFReflector.ini next to the logs (pysfreflector.ini's keys differ)
+cat > "${LOGDIR}/YSFReflector.ini" <<EOF
+[Info]
+Id=${ID}
+Name=${NAME}
+Description=${DESC}
+
+[Network]
+Port=${YSF_PORT}
+EOF
+
+echo "pYSFReflector3 : '${NAME}' (id ${ID}) on UDP ${YSF_PORT}, json ${YSF_JSON_PORT}, DG-IDs ${YSF_DGID_LIST} (default ${YSF_DGID_DEFAULT})"
 cd /usr/local/lib/pysfreflector
 exec python3 -u ./YSFReflector "${DATA}/pysfreflector.ini"
