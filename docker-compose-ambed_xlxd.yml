@@ -8,8 +8,9 @@
 ## stack env, or the shell) - it starts the reflector AND adds its peer line to xlxd.interlink :
 ##   NXDN_REFLECTOR=1   P25_REFLECTOR=1   YSF_REFLECTOR=1      (0 or unset = off)
 ## each reflector's dashboard follows it; NXDN_DASHBOARD=0 / P25_DASHBOARD=0 / YSF_DASHBOARD=0 turns just the dashboard off
+## (YSF_DASHBOARD_CLASSIC=1 adds pYSF3's own dashboard - DG-ID / blocked views - on 8084)
 ##
-## images are also on ghcr.io/cbodden/{ambed,xlxd,nxdnreflector,p25reflector,nxdndashboard,p25dashboard,ysfreflector,ysfdashboard}-docker
+## images are also on ghcr.io/cbodden/{ambed,xlxd,nxdnreflector,p25reflector,nxdndashboard,p25dashboard,ysfreflector,ysfdashboard2,ysfdashboard}-docker
 
 services:
   ambed:
@@ -164,21 +165,39 @@ services:
       TZ: UTC
     volumes:
       - ysf-data:/opt/pysfreflector       # deny list, home db, last DG-ID per gateway
+      - ysf-logs:/var/log/ysfreflector    # dated logs + YSFReflector.ini for ysfdashboard2
     ports:
       - 41500:42000/udp       # public port != xlxd's 42000
 
+  ysfdashboard2:
+    container_name: ysfdashboard2
+    image: cbodden/ysfdashboard2-docker:latest
+    restart: unless-stopped
+    scale: ${YSF_DASHBOARD:-${YSF_REFLECTOR:-0}}
+    environment:
+      DASHBOARD_NAME: XLX000-XYZ123
+      DASHBOARD_TAGLINE: XLX000 module A
+      # DASHBOARD_PATH: /ysfreflector/
+      TZ: UTC
+    volumes:
+      - ysf-logs:/var/log/ysfreflector:ro
+    ports:
+      - 8083:80/tcp
+
+  ## pYSF3's own dashboard (reads the reflector's json feed) - opt-in
   ysfdashboard:
     container_name: ysfdashboard
     image: cbodden/ysfdashboard-docker:latest
     restart: unless-stopped
-    scale: ${YSF_DASHBOARD:-${YSF_REFLECTOR:-0}}
+    scale: ${YSF_DASHBOARD_CLASSIC:-0}
     environment:
       YSF_JSON_HOST: ysfreflector
       TZ: UTC
     ports:
-      - 8083:80/tcp
+      - 8084:80/tcp
 
 volumes:
   nxdn-logs:
   p25-logs:
   ysf-data:
+  ysf-logs:

@@ -14,7 +14,8 @@ Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiproto
 | NXDN dashboard | [cbodden/nxdndashboard-docker](https://hub.docker.com/r/cbodden/nxdndashboard-docker/tags) | `ghcr.io/cbodden/nxdndashboard-docker` | x86_64, ARM64/v8 | Alpine Latest |
 | P25 dashboard  | [cbodden/p25dashboard-docker](https://hub.docker.com/r/cbodden/p25dashboard-docker/tags)   | `ghcr.io/cbodden/p25dashboard-docker`  | x86_64, ARM64/v8 | Alpine Latest |
 | YSFReflector   | [cbodden/ysfreflector-docker](https://hub.docker.com/r/cbodden/ysfreflector-docker/tags)   | `ghcr.io/cbodden/ysfreflector-docker`  | x86_64, ARM64/v8 | Alpine Latest |
-| YSF dashboard  | [cbodden/ysfdashboard-docker](https://hub.docker.com/r/cbodden/ysfdashboard-docker/tags)   | `ghcr.io/cbodden/ysfdashboard-docker`  | x86_64, ARM64/v8 | Alpine Latest |
+| YSF dashboard  | [cbodden/ysfdashboard2-docker](https://hub.docker.com/r/cbodden/ysfdashboard2-docker/tags) | `ghcr.io/cbodden/ysfdashboard2-docker` | x86_64, ARM64/v8 | Alpine Latest |
+| YSF dashboard (pYSF3 classic) | [cbodden/ysfdashboard-docker](https://hub.docker.com/r/cbodden/ysfdashboard-docker/tags) | `ghcr.io/cbodden/ysfdashboard-docker` | x86_64, ARM64/v8 | Alpine Latest |
 
 | Tag | Built from |
 | :-- | :--------- |
@@ -28,8 +29,8 @@ Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiproto
 - XLXd: 2.6.1
 - Dashboard: 2.4.7 (upstream `dashboard1`)
 - NXDNReflector / P25Reflector: 20210912 (G4KLX - frozen, see [NXDN and P25 reflectors](#6-nxdn-and-p25-reflectors))
-- NXDN / P25 reflector dashboards: ShaYmez Dashboard2 2.0.3
-- YSFReflector + dashboard: IU5JAE pYSFReflector3 20260414 (see [YSF reflector](#8-ysf-reflector-and-dashboard))
+- NXDN / P25 / YSF reflector dashboards: ShaYmez Dashboard2 2.0.3
+- YSFReflector + classic dashboard: IU5JAE pYSFReflector3 20260414 (see [YSF reflector](#8-ysf-reflector-and-dashboard))
 - FTDI D2XX: 1.4.33
 - S6 Overlay: 3.2.3.2
 - Alpine: Latest
@@ -183,6 +184,7 @@ Keep `callinghome.php` in `/config` once the reflector has called home: it holds
 | 41000 | UDP | P25 reflector (p25reflector container, optional) |
 | 41500 | UDP | YSF reflector (ysfreflector container, optional - container port 42000) |
 | 8081 / 8082 / 8083 | TCP | NXDN / P25 / YSF reflector dashboards (optional, usually behind a reverse proxy) |
+| 8084 | TCP | pYSF3's classic YSF dashboard (optional) |
 
 Only publish (and forward on the firewall) the ports of the modes you serve; M17 on 17000/UDP needs AMBEd 1.4.0+ for Codec2 transcoding, which this image has.
 
@@ -229,13 +231,13 @@ Optional log files for the dashboards below (both reflectors, `NXDN_` / `P25_` p
 
 ### 7. NXDN and P25 reflector dashboards
 
-`nxdndashboard` / `p25dashboard` serve [ShaYmez](https://github.com/ShaYmez)'s [NXDNReflector-Dashboard2](https://github.com/ShaYmez/NXDNReflector-Dashboard2) / [P25Reflector-Dashboard2](https://github.com/ShaYmez/P25Reflector-Dashboard2) (GPL-3.0, pinned by `DASH_GIT_REF`): linked repeaters / hotspots, last heard, live TX. They read the reflector's log files and ini, so turn on `*_LOG_FILE` on the reflector and mount the same volume read-only into the dashboard (see [`docker-compose-ambed_xlxd.yml`](./docker-compose-ambed_xlxd.yml)). The config comes from the environment instead of the dashboard's setup wizard, which is removed. Linked repeaters show up after the reflector's next "Currently linked repeaters" log line (every couple of minutes).
+`nxdndashboard` / `p25dashboard` / `ysfdashboard2` serve [ShaYmez](https://github.com/ShaYmez)'s [NXDNReflector-Dashboard2](https://github.com/ShaYmez/NXDNReflector-Dashboard2) / [P25Reflector-Dashboard2](https://github.com/ShaYmez/P25Reflector-Dashboard2) / [YSFReflector-Dashboard2](https://github.com/ShaYmez/YSFReflector-Dashboard2) (GPL-3.0, pinned by `DASH_GIT_REF`): linked repeaters / hotspots, last heard, live TX. They read the reflector's log files and ini, so turn on `*_LOG_FILE` on the NXDN / P25 reflector (the YSF reflector always writes them) and mount the same volume read-only into the dashboard (see [`docker-compose-ambed_xlxd.yml`](./docker-compose-ambed_xlxd.yml)). The config comes from the environment instead of the dashboard's setup wizard, which is removed. Linked repeaters show up after the reflector's next "Currently linked repeaters" log line (every couple of minutes).
 
 | Variable | Default | Description |
 | :------- | :------ | :---------- |
 | `DASHBOARD_PORT` | `80` | Port Apache listens on in the container |
 | `DASHBOARD_PATH` | `/` | Public path when served under a reverse-proxy prefix, e.g. `/nxdnreflector/` (the proxy strips it; this keeps the canonical / social links right) |
-| `DASHBOARD_NAME` | `NXDN Reflector Dashboard` / `P25 Reflector Dashboard` | Header and page title |
+| `DASHBOARD_NAME` | `NXDN Reflector Dashboard` / `P25 Reflector Dashboard` / `YSF Reflector Dashboard` | Header and page title |
 | `DASHBOARD_TAGLINE` | - | Line under the name |
 | `DASHBOARD_LOGO` | - | Logo file in `img/` (mount your own over `/var/www/dashboard/img/<file>`) |
 | `SHOW_QRZ` | `off` | Link callsigns to QRZ.com |
@@ -244,7 +246,7 @@ Optional log files for the dashboards below (both reflectors, `NXDN_` / `P25_` p
 | `SHOW_SYSTEM_INFO` | `off` | Uptime / load / disk panel (in a container it describes the container) |
 | `SHOW_PROGRESS_BARS` | `on` | Progress bars in the system panel |
 | `SHOW_OLD_MHEARD` | `7` | Days of last-heard history to show |
-| `TZ` | `UTC` | Time zone for the dashboard's times |
+| `TZ` | `UTC` | Time zone the dashboard shows times in (the reflectors log in UTC; the image reads them as UTC and converts) |
 
 Behind a reverse proxy on a sub-path, strip the prefix and redirect the bare path to the one with a trailing slash (the dashboard uses relative links). Traefik example for `xlx.example.com/nxdnreflector/`:
 
@@ -285,14 +287,16 @@ Switch it on with `YSF_REFLECTOR=1` (service `scale` **and** xlxd's `YSF_PEER_EN
 | `YSF_TIMEOUT` | `190` | Transmit timeout in seconds |
 | `YSF_CHECK_CALLSIGN` | `on` | Drop transmissions whose callsign doesn't look like one |
 | `YSF_APRS` | `off` | Send positions to APRS-IS (`YSF_APRS_SERVER`, `YSF_APRS_PORT`, `YSF_APRS_SSID`) |
-| `YSF_LOG_LEVEL` | `1` | 0 = everything, 1 = normal, 2-4 = less, 5 = nothing. The log goes to dated (UTC) files in `/var/log/ysfreflector`, which `docker logs` follows |
+| `YSF_LOG_LEVEL` | `1` | 0 = everything, 1 = normal, 2-4 = less, 5 = nothing. The log goes to dated (UTC) files in `/var/log/ysfreflector`, which `docker logs` follows (`ysfdashboard2` needs 1 or lower) |
 | `YSF_LOG_KEEP_DAYS` | `7` | Log files older than this are deleted (at start and daily) |
 
 Mount `/opt/pysfreflector` to keep the deny list (`deny.db`, see upstream's `ACL_rules.txt`), the return-home list (`home.db`) and each gateway's last DG-ID across re-creates. Both `.db` files are seeded on first start and are yours to edit after that.
 
 Register the reflector at [register.ysfreflector.de](https://register.ysfreflector.de) with its public host and port; it then reaches the YSF host lists that hotspots download. Use its id as the `YSF_PEER` number (it's only a label on the XLX peers page), and set `YSF_ID` only if the registry's id differs from the computed one.
 
-`ysfdashboard` serves pYSF3's own dashboard (IK5XMK's collector + pages): last heard, linked gateways with their DG-ID, blocked calls. Its collector reads the reflector's json feed into SQLite, so it only needs the reflector's address - no shared volume. Linked gateways show up after the reflector's next list (every 2 minutes).
+Mount `/var/log/ysfreflector` as a volume and share it read-only with `ysfdashboard2` - the reflector also writes a G4KLX style `YSFReflector.ini` (name, description, registry id) there for it. `ysfdashboard2` is the [ShaYmez Dashboard2](#7-nxdn-and-p25-reflector-dashboards) for YSF, with the same variables; it switches with `YSF_DASHBOARD` (follows `YSF_REFLECTOR`). It has no DG-ID view.
+
+`ysfdashboard` serves pYSF3's own "classic" dashboard (IK5XMK's collector + pages): last heard, linked gateways with their DG-ID, blocked calls. Opt-in in the example (`YSF_DASHBOARD_CLASSIC=1`, port 8084). Its collector reads the reflector's json feed into SQLite, so it only needs the reflector's address - no shared volume. Linked gateways show up after the reflector's next list (every 2 minutes).
 
 | Variable | Default | Description |
 | :------- | :------ | :---------- |
