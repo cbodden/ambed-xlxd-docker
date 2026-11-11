@@ -276,7 +276,7 @@ Switch it on with `YSF_REFLECTOR=1` (service `scale` **and** xlxd's `YSF_PEER_EN
 | `YSF_NAME` | - | **Required.** Registry name (16 characters max - longer is cut with a warning) |
 | `YSF_DESCRIPTION` | `YSF_NAME` | Registry description (14 characters max) |
 | `YSF_ID` | `0` | Registry id, answered in status polls - set it once registered |
-| `YSF_CONTACT` / `YSF_WEB` | - | Contact e-mail / web site shown on the dashboard |
+| `YSF_CONTACT` / `YSF_WEB` | - | Contact e-mail / web site shown on the dashboard (`YSF_WEB` without `http://` - the dashboard adds it) |
 | `YSF_PORT` | `42000` | UDP port in the container |
 | `YSF_JSON_PORT` | `42223` | UDP port of the json feed the dashboard reads (stack network only - don't publish it) |
 | `YSF_DGID_LIST` | `1,9,50` | DG-IDs allowed on the reflector |
