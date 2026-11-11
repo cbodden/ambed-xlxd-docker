@@ -80,7 +80,7 @@ sed -i "s/^Listen .*/Listen ${PORT}/" /etc/apache2/httpd.conf
 mkdir -p /run/apache2
 
 [ -d "${LOGDIR}" ] && ls "${LOGDIR}"/"${KIND}"Reflector-*.log > /dev/null 2>&1 \
-  || echo "WARNING : no ${KIND}Reflector log files in ${LOGDIR} yet - share the reflector's log volume (NXDN / P25: turn on ${KIND}_LOG_FILE)"
+  || echo "WARNING : no ${KIND}Reflector log files in ${LOGDIR} yet - share the reflector's log volume$([ "${KIND}" = YSF ] || echo " and turn on ${KIND}_LOG_FILE") (normal for a few seconds after a fresh start)"
 
 echo "${KIND}Reflector-Dashboard2 on port ${PORT} (public path ${BASEPATH}), reading ${LOGDIR}"
 exec httpd -D FOREGROUND
