@@ -1,4 +1,4 @@
-## weekly check of LX3JL/xlxd master && s6-overlay releases against what the Dockerfiles pin
+## weekly check of LX3JL/xlxd master, s6-overlay releases, pYSFReflector3 && the Dashboard2 repos against what the Dockerfiles pin
 ## opens a PR into testing that bumps the pin (one per upstream version), with a build check
 ## a push that changes this check runs it as a dry run (report + pin diff only)
 ## the schedule only fires from the default branch (main)

@@ -2,6 +2,7 @@
 ## compares what the Dockerfiles pin against upstream && opens a PR into testing that bumps the pin
 ##   LX3JL/xlxd master          vs  XLXD_GIT_REF        in AMBEd/Dockerfile && XLXd/Dockerfile
 ##   s6-overlay latest release  vs  S6_OVERLAY_VERSION  in AMBEd/Dockerfile && XLXd/Dockerfile
+##   pYSFReflector3 && the Dashboard2 repos' default branch  vs  PYSF_GIT_REF / DASH_GIT_REF (see GIT_PINS below)
 ##
 ## one branch per upstream version (upstream/<name>-<version>):
 ##   same version next week   -> the open PR's description is refreshed
@@ -19,6 +20,7 @@
 ##   DRY_RUN              true = print the reports && the pin diffs only, touch nothing
 ##   PINNED_OVERRIDE      optional xlxd sha to pretend is pinned (testing)
 ##   S6_PINNED_OVERRIDE   optional s6-overlay version to pretend is pinned (testing)
+##   PIN_OVERRIDE_<name>  optional sha to pretend is pinned for a GIT_PINS entry, e.g. PIN_OVERRIDE_ysfdashboard2 (testing)
 
 set -euo pipefail
 
@@ -31,6 +33,8 @@ DOCKERFILES="AMBEd/Dockerfile XLXd/Dockerfile"
 ## pin bumps, run from the repo root (or a copy of it)
 bump_xlxd() { sed -i "s/^ARG XLXD_GIT_REF=.*/ARG XLXD_GIT_REF=$1/" ${DOCKERFILES}; }
 bump_s6() { sed -i "s/^ARG S6_OVERLAY_VERSION=[^ ]*/ARG S6_OVERLAY_VERSION=$1/" ${DOCKERFILES}; }
+## bump_ref <ARG name> <sha> <files...>
+bump_ref() { local var=$1 sha=$2; shift 2; sed -i "s/^ARG ${var}=.*/ARG ${var}=${sha}/" "$@"; }
 
 ## close open upstream PRs for <name> other than <keep> : close_stale <name> <keep branch> <comment>
 close_stale() {
@@ -45,9 +49,9 @@ close_stale() {
   done
 }
 
-## open or refresh the bump PR : open_pr <name> <version> <title> <body> <bump command>
+## open or refresh the bump PR : open_pr <name> <version> <title> <body> <bump command> [files the bump touches]
 open_pr() {
-  local name=$1 version=$2 title=$3 body=$4 bump=$5
+  local name=$1 version=$2 title=$3 body=$4 bump=$5 files=${6:-${DOCKERFILES}}
   local branch="upstream/${name}-${version}" existing tmp new f
   echo "${title}"
   echo
@@ -56,13 +60,13 @@ open_pr() {
 
   if [ "${DRY_RUN}" = "true" ]; then
     tmp=$(mktemp -d)
-    for f in ${DOCKERFILES}; do
+    for f in ${files}; do
       mkdir -p "${tmp}/$(dirname "${f}")"
       cp "${f}" "${tmp}/${f}"
     done
     (cd "${tmp}" && ${bump})
     echo "dry run - ${branch} would change:"
-    for f in ${DOCKERFILES}; do
+    for f in ${files}; do
       diff -u "${f}" "${tmp}/${f}" || true
     done
     rm -rf "${tmp}"
@@ -254,9 +258,112 @@ EOF
   open_pr s6-overlay "${latest}" "${title}" "${body}" "bump_s6 ${latest}"
 }
 
-## run both, fail the job if either failed
+############################################
+###### YSF reflector && the dashboards ######
+############################################
+
+## one line per git-pinned upstream, fields split by | :
+##   name (branch upstream/<name>-<sha7>) | upstream repo | ARG name | Dockerfiles the ARG is in |
+##   scope : only changes under these paths count ("" = the whole repo) |
+##   watch : changed files to flag - our Dockerfiles patch or depend on them |
+##   what to try on 005 before merging
+## not here : NXDN_GIT_REF / P25_GIT_REF - G4KLX deleted both reflectors from NXDNClients / P25Clients in Feb 2023,
+## the pins are the last commits that had them, so upstream has nothing newer to offer
+GIT_PINS=(
+  "pysfreflector3|iu5jae/pYSFReflector3|PYSF_GIT_REF|YSFReflector/Dockerfile YSFDashboard/Dockerfile||YSFReflector deny.db home.db ACL_rules.txt pysfreflector.ini dashboard/|a YSFS poll on the public port answers, xlxd's YSF peer connects, a hotspot links + transmits, the classic dashboard (if used) still loads"
+  "nxdndashboard2|ShaYmez/NXDNReflector-Dashboard2|DASH_GIT_REF|NXDNDashboard/Dockerfile||include/seo.php include/functions.php include/tools.php setup.php index.php api/|the NXDN dashboard page + api load, linked list and last heard show the right local times"
+  "p25dashboard2|ShaYmez/P25Reflector-Dashboard2|DASH_GIT_REF|P25Dashboard/Dockerfile||include/seo.php include/functions.php include/tools.php setup.php index.php api/|the P25 dashboard page + api load, linked list and last heard show the right local times"
+  "ysfdashboard2|ShaYmez/YSFReflector-Dashboard2|DASH_GIT_REF|YSFDashboard2/Dockerfile||include/seo.php include/functions.php include/tools.php setup.php index.php api/|the YSF dashboard page + api load, ID / name from YSFReflector.ini, linked list and last heard show the right local times"
+)
+
+## check_git_pin <one GIT_PINS line>
+check_git_pin() {
+  local name upstream_repo var files scope watch trial
+  IFS='|' read -r name upstream_repo var files scope watch trial <<< "$1"
+  local f pinned="" p override branch upstream compare commits log changed in_scope title body
+  local scope_json watch_json files_md scope_md=""
+
+  ## every Dockerfile must pin the same commit
+  for f in ${files}; do
+    p=$(sed -n "s/^ARG ${var}=//p" "${f}")
+    if [ -z "${pinned}" ]; then
+      pinned=${p}
+    elif [ "${p}" != "${pinned}" ]; then
+      echo "${name}: ${var} differs between ${files} (${pinned:0:7} / ${p:0:7}) - the PR sets them all"
+    fi
+  done
+  override=$(printenv "PIN_OVERRIDE_${name}" || true)
+  pinned=${override:-${pinned}}
+  branch=$(gh api "repos/${upstream_repo}" --jq .default_branch)
+  upstream=$(gh api "repos/${upstream_repo}/commits/${branch}" --jq .sha)
+  if [ -z "${pinned}" ] || [ -z "${upstream}" ]; then
+    echo "${name}: could not read pinned (${pinned:-none}) or upstream (${upstream:-none}) ref"
+    return 1
+  fi
+  if [ "${pinned}" = "${upstream}" ]; then
+    echo "${name} up to date : pinned ${pinned:0:7} == ${upstream_repo} ${branch}"
+    close_stale "${name}" "" "${var} is already ${pinned:0:7} (upstream ${branch}) - closing"
+    return
+  fi
+
+  compare=$(gh api "repos/${upstream_repo}/compare/${pinned}...${upstream}")
+  scope_json=$(jq -cn --arg s "${scope}" '$s | split(" ") | map(select(. != ""))')
+  watch_json=$(jq -cn --arg s "${watch}" '$s | split(" ") | map(select(. != ""))')
+  in_scope=$(jq --argjson scope "${scope_json}" '[(.files // [])[].filename as $f
+    | select(($scope | length) == 0 or any($scope[]; . as $p | $f | startswith($p)))] | length' <<< "${compare}")
+  if [ "${in_scope}" -eq 0 ]; then
+    echo "${name}: ${upstream_repo} ${branch} moved to ${upstream:0:7}, but nothing under ${scope} changed - no PR"
+    return
+  fi
+  commits=$(jq -r '.total_commits' <<< "${compare}")
+  log=$(jq -r '.commits[-15:] | reverse | .[] | "- `\(.sha[0:7])` \(.commit.message | split("\n")[0])"' <<< "${compare}")
+  changed=$(jq -r --argjson scope "${scope_json}" --argjson watch "${watch_json}" '
+    [(.files // [])[] | .filename as $f
+      | select(($scope | length) == 0 or any($scope[]; . as $p | $f | startswith($p)))
+      | if any($watch[]; . as $p | $f | startswith($p)) then "- **`\($f)`** (\(.status))" else "- `\($f)` (\(.status))" end]
+    | (.[0:30] | .[]), (if length > 30 then "- ... and \(length - 30) more" else empty end)' <<< "${compare}")
+  if [ "$(jq '(.files // []) | length' <<< "${compare}")" -ge 300 ]; then
+    changed="${changed}
+- **list truncated** : github only returns the first 300 changed files - check the compare link"
+  fi
+  files_md=$(for f in ${files}; do printf '`%s`\n' "${f}"; done | sed ':a;N;$!ba;s/\n/ \&\& /g')
+  [ -z "${scope}" ] || scope_md=" under \`${scope}\`"
+
+  title="${name}: bump to ${upstream:0:7} (${commits} new commits)"
+  body=$(cat <<EOF
+${upstream_repo} ${branch} has moved past the commit pinned in the Dockerfiles; this PR sets \`${var}\` to it in ${files_md}.
+
+| | pinned | upstream ${branch} |
+| :-- | :-- | :-- |
+| commit | \`${pinned:0:7}\` | \`${upstream:0:7}\` |
+
+**${commits} new commits** - [compare](https://github.com/${upstream_repo}/compare/${pinned}...${upstream})
+
+### recent commits
+${log}
+
+### changed files${scope_md} - **bold** = our Dockerfile patches or depends on it
+${changed}
+
+### before / after merging
+- [ ] the docker images build check on this branch passed (amd64 + arm64)
+- [ ] merge -> CI publishes \`:test\`
+- [ ] run \`:test\` on 005 : ${trial}
+- [ ] merge \`testing\` -> \`main\` -> CI publishes \`:latest\`
+
+_opened by the upstream-check workflow - refreshed $(date -u +%Y-%m-%d)_
+EOF
+)
+  open_pr "${name}" "${upstream:0:7}" "${title}" "${body}" "bump_ref ${var} ${upstream} ${files}" "${files}"
+}
+
+## run them all, fail the job if any failed
 rc=0
 check_xlxd || rc=1
 echo
 check_s6 || rc=1
+for entry in "${GIT_PINS[@]}"; do
+  echo
+  check_git_pin "${entry}" || rc=1
+done
 exit ${rc}
