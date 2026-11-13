@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 ## ysfreflector
 ## IU5JAE's pYSFReflector3 (G4KLX's YSFReflector was removed from YSFClients in Feb 2023).
 ## xlxd peers it onto one XLX module; YSF hotspots / radios connect to it like any YSF reflector.

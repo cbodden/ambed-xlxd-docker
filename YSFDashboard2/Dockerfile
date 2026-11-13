@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 ## ysfdashboard2
 ## ShaYmez/YSFReflector-Dashboard2 for the ysfreflector image: reads the reflector's dated log files and
 ## YSFReflector.ini (written there for it) from its shared log volume, mounted read only

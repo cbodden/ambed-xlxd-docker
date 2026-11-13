@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 ## p25reflector
 ## G4KLX's P25Reflector - removed from g4klx/P25Clients in Feb 2023 (aa9ded6), so this builds the
 ## last commit that still had it. The code is frozen upstream; nothing to track.

@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 ## nxdnreflector
 ## G4KLX's NXDNReflector - removed from g4klx/NXDNClients in Feb 2023 (486106a), so this builds the
 ## last commit that still had it. The code is frozen upstream; nothing to track.

@@ -1,5 +1,5 @@
 ## ambed
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 
 ## two stages : "build" compiles ambed and fetches libftd2xx + s6-overlay into /rootfs,
 ## the final image is a clean ubuntu with only /rootfs and the runtime packages (no compiler)

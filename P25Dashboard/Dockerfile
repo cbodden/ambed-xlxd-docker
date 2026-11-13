@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 ## p25dashboard
 ## ShaYmez/P25Reflector-Dashboard2 for the p25reflector image: reads the reflector's log files and
 ## ini from its shared log volume (P25_LOG_FILE=on on the reflector), mounted read only
