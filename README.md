@@ -25,8 +25,8 @@ Docker images for the [LX3JL/xlxd](https://github.com/LX3JL/xlxd) XLX multiproto
 
 
 ### Versions
-- AMBEd: 1.4.0
-- XLXd: 2.6.1
+- AMBEd: 1.5.0
+- XLXd: 2.6.2
 - Dashboard: 2.4.7 (upstream `dashboard1`)
 - NXDNReflector / P25Reflector: 20210912 (G4KLX - frozen, see [NXDN and P25 reflectors](#6-nxdn-and-p25-reflectors))
 - NXDN / P25 / YSF reflector dashboards: ShaYmez Dashboard2 2.0.3
@@ -45,7 +45,8 @@ FTDI testing done with:
 - 2 x DVSI AMBE3000
 - 1 x DVMEGA DVstick 33
 ```
-Starting AMBEd 1.4.0
+Config: LISTEN_IP=172.18.0.2 LISTEN_PORT=10100 ... USE_AGC=1 AGC_TARGET=-41 AGC_CLAMPING=9 ... USE_BANDPASSFILTER=1 STREAM_ACTIVITY_TIMEOUT=3 TUNING_LOG=1
+Starting AMBEd 1.5.0
 
 Initializing vocodecs:
 Detected 3 USB-FTDI devices
@@ -73,10 +74,11 @@ Initializing controller
 
 Max concurrent streams: 2 (from 4 vocoder channels)
 
-AMBEd started and listening on 0.0.0.0
+AMBEd started and listening on 172.18.0.2:10100
+Voice packets marked as DSCP 46
 ```
 
-AMBEd 1.4.0 also includes software IMBE (P25) and Codec2 (M17) vocoders, so P25 and M17 transcoding work alongside the DVSI hardware.
+AMBEd also includes software IMBE (P25) and Codec2 (M17) vocoders, so P25 and M17 transcoding work alongside the DVSI hardware.
 
 
 ## Usage
@@ -100,6 +102,22 @@ Give the container the USB devices, either with `privileged: true` or by passing
     device_cgroup_rules:
       - 'c 188:* rwm'
 ```
+
+#### AMBEd settings (`ambed.ini`)
+
+AMBEd 1.5.0 reads its settings - listen IP, per-mode gains, AGC, bandpass filter - from `ambed.ini`. The image writes `/ambed/ambed.ini` at every start: `LISTEN_IP` is the container's IP, and each `AMBED_<KEY>` variable in the environment becomes `<KEY>=<value>`. Keys you don't set use AMBEd's defaults; upstream's annotated file with every key, its range and default is in the image as `/ambed/ambed.ini.dist`. AMBEd logs a bad value and ignores it.
+
+| Variable | AMBEd default | Description |
+| :------- | :------------ | :---------- |
+| `AMBED_LISTEN_IP` | container IP | IP AMBEd binds to. Only set it if the container has more than one network |
+| `AMBED_USE_AGC` | `1` | Software AGC: evens out loud and quiet stations. `0` turns it off |
+| `AMBED_AGC_TARGET`, `AMBED_AGC_CLAMPING`, ... | see `ambed.ini.dist` | AGC tuning |
+| `AMBED_DMR_TO_PCM`, `AMBED_PCM_TO_DMR`, ... | see `ambed.ini.dist` | Decode / encode gain per mode in dB (`DSTAR`, `DMR` - also YSF and NXDN -, `M17`, `P25`) |
+| `AMBED_USE_BANDPASSFILTER` | `1` | 300-3400 Hz bandpass |
+| `AMBED_TUNING_LOG` | `1` | Log audio levels when a stream closes - the numbers to tune the gains from |
+| `AMBED_CONFIG` | - | Path to your own ini (e.g. mount it at `/config/ambed.ini`), used as is instead - set `LISTEN_IP` in it |
+
+AMBEd re-reads the ini every 3 minutes, so a value changed in a mounted `AMBED_CONFIG` file applies from the next stream without a restart (`LISTEN_IP` / `LISTEN_PORT` still need one). Upstream's [AMBEd README](https://github.com/LX3JL/xlxd/blob/master/ambed/README.md) explains the audio path and how to tune it.
 
 ### 2. XLXd environment
 
@@ -196,14 +214,15 @@ These are compiled in, so changing them means building the image with `--build-a
 | :-------- | :---- | :------ | :---------- |
 | `YSF_AUTOLINK_MODULE` | XLXd | `A` | Module a YSF client is linked to when it doesn't pick one (upstream 2.6 uses `B`) |
 | `IMRS_DEFAULT_MODULE` | XLXd | `A` | Default module for Yaesu IMRS (Wires-X) clients (upstream 2.6 uses `B`) |
-| `USE_AGC` | AMBEd | `0` | `1` turns on the DVSI chips' automatic gain control |
+
+AMBEd's settings (AGC, gains, filter) are no longer build-time options - see [AMBEd settings](#ambed-settings-ambedini).
 
 ### 6. NXDN and P25 reflectors
 
 XLXd 2.6.x can't take NXDN or P25 radios directly - it only peers with NXDN / P25 reflectors. These two optional images run [G4KLX](https://github.com/g4klx)'s NXDNReflector and P25Reflector so NXDN and P25 users have a way in: they connect to the reflector, and xlxd peers that reflector onto one XLX module (one module per reflector - they're single-room).
 
 - **NXDN** uses the same AMBE+2 codec as DMR / YSF - no transcoding.
-- **P25** uses IMBE: AMBEd 1.4.0 does it in software, plus 2 DVSI channels per P25 <-> DMR / D-Star stream, shared with the other transcoding.
+- **P25** uses IMBE: AMBEd does it in software, plus 2 DVSI channels per P25 <-> DMR / D-Star stream, shared with the other transcoding.
 - **Frozen upstream:** G4KLX removed both reflectors from NXDNClients / P25Clients in Feb 2023. The images build the last commit that had them (version 20210912, `NXDN_GIT_REF` / `P25_GIT_REF`), so there's nothing for the upstream check to track.
 
 Switch each one on with a single variable (see [`docker-compose-ambed_xlxd.yml`](./docker-compose-ambed_xlxd.yml)): `NXDN_REFLECTOR=1` / `P25_REFLECTOR=1` sets the service's `scale` (0 = no container) **and** the xlxd peer's `*_PEER_ENABLED`, so turning a reflector off also stops xlxd trying to reach it. xlxd reaches the reflector by service name on the stack's network, so only the reflector's own port needs publishing / forwarding for outside users.

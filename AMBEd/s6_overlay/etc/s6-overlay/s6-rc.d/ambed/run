@@ -1,5 +1,38 @@
 #!/command/with-contenv sh
 
-IP=$( hostname -I )
+## AMBEd 1.5.0 takes its settings from an ini file (ambed /ambed/ambed.ini), the listen IP included
+##   AMBED_CONFIG=<path>  use your own ini as is (ex: a mounted /config/ambed.ini) - set LISTEN_IP in it
+##   otherwise /ambed/ambed.ini is written here at every start :
+##     LISTEN_IP     AMBED_LISTEN_IP, default the container's IP
+##     <KEY>         AMBED_<KEY> for every other ambed.ini key, ex: AMBED_USE_AGC=0, AMBED_PCM_TO_DMR=1.5
+##   a key left out uses AMBEd's default, see /ambed/ambed.ini.dist ; bad values are logged and ignored by AMBEd
+## AMBEd re-reads the ini every 3 minutes, so edits to it apply from the next stream (LISTEN_* need a restart)
 
-exec /ambed/ambed ${IP}
+if [ -n "${AMBED_CONFIG}" ]; then
+    if [ ! -r "${AMBED_CONFIG}" ]; then
+        echo "ambed: AMBED_CONFIG=${AMBED_CONFIG} is not readable"
+        exit 1
+    fi
+    echo "ambed: using ${AMBED_CONFIG}"
+    exec /ambed/ambed "${AMBED_CONFIG}"
+fi
+
+INI=/ambed/ambed.ini
+IP=${AMBED_LISTEN_IP:-$( hostname -I | awk '{ print $1 }' )}
+## without it AMBEd falls back to 127.0.0.1 and xlxd in its own container can't reach it
+[ -z "${IP}" ] && echo "ambed: WARNING no container IP found - set AMBED_LISTEN_IP"
+
+{
+    echo "## written by the ambed service at start from the AMBED_* environment - edits are lost on restart"
+    echo "## keys left out use AMBEd's defaults, see /ambed/ambed.ini.dist"
+    echo "LISTEN_IP=${IP}"
+    for KEY in LISTEN_PORT DSCP_MARKING_ENABLE DSCP_VALUE STREAM_ACTIVITY_TIMEOUT TUNING_LOG \
+               DSTAR_TO_PCM DMR_TO_PCM M17_TO_PCM P25_TO_PCM PCM_TO_DSTAR PCM_TO_DMR PCM_TO_M17 PCM_TO_P25 \
+               USE_AGC AGC_TARGET AGC_CLAMPING AGC_ATTACK AGC_HANG AGC_RECOVERY AGC_RECOVERY_MIN AGC_RECOVERY_MAX AGC_GATE \
+               USE_BANDPASSFILTER ; do
+        VALUE=$( printenv "AMBED_${KEY}" )
+        [ -n "${VALUE}" ] && echo "${KEY}=${VALUE}"
+    done
+} > ${INI}
+
+exec /ambed/ambed ${INI}

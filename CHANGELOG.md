@@ -11,7 +11,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- xlxd 2.6.1 -> 2.6.2 and AMBEd 1.4.0 -> 1.5.0 (LX3JL/xlxd `a978f03` -> `f13dfae`): xlxd M17 / YSF protocol
+  updates; AMBEd reworked AGC, per-mode gains, bandpass filter and stream-id fixes, configured from `ambed.ini`
+- AMBEd: 1.5.0 takes an ini instead of the listen IP. The image writes `/ambed/ambed.ini` at start - `LISTEN_IP` =
+  the container IP, plus every `AMBED_<KEY>` env var (`AMBED_USE_AGC`, `AMBED_PCM_TO_DMR`, ...);
+  `AMBED_CONFIG` uses your own ini instead. Upstream's annotated file is `/ambed/ambed.ini.dist`
 - Upstream check no longer runs (as a dry run) on every `v*` tag push - its `push` trigger is limited to branches
+
+### Removed
+- AMBEd `USE_AGC` build arg. It never took effect (the `sed` didn't write `main.h`), so AMBEd always ran with
+  AGC on; set `AMBED_USE_AGC=0` to turn it off
 
 
 ## [2.6.1-4] - 2026-11-13

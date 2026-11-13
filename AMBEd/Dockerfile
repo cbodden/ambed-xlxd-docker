@@ -31,9 +31,9 @@ RUN if [ -n "${UBUNTU_MIRROR}" ]; then \
 FROM ubuntu AS build
 
 ARG TARGETARCH
-ARG AMBED_DIR=/ambed AMBED_INST_DIR=/src/ambed USE_AGC=0
-## LX3JL/xlxd commit : AMBEd 1.4.0 / xlxd 2.6.1
-ARG XLXD_GIT_REF=a978f03671d87c6d9ac13453689755991e5cb668
+ARG AMBED_DIR=/ambed AMBED_INST_DIR=/src/ambed
+## LX3JL/xlxd commit : AMBEd 1.5.0 / xlxd 2.6.2
+ARG XLXD_GIT_REF=f13dfaebb5759ae8fdf32ed7adaa29421f67a993
 ARG FTDI_INST_VER=1.4.33 FTDI_INST_DIR=/src/ftdi
 ARG FTDI_INST_ADDRESS=https://ftdichip.com/wp-content/uploads/2025/03
 ARG FTDI_FALLBACK_IMAGE
@@ -96,17 +96,15 @@ RUN if [ "${TARGETARCH}" = "arm64" ]; then \
     && cp -a /usr/local/lib/libftd2xx.so.${FTDI_INST_VER} /usr/local/lib/libftd2xx.so ${ROOTFS}/usr/local/lib/ \
     && cp -a /usr/local/include/ftd2xx.h /usr/local/include/WinTypes.h ${ROOTFS}/usr/local/include/
 
-## sed edits for main.h
-RUN sed "s/\(USE_AGC[[:space:]]*\)[[:digit:]]/\1${USE_AGC}/g" ${AMBED_INST_DIR}${AMBED_DIR}/main.h \
-    && cp ${AMBED_INST_DIR}${AMBED_DIR}/main.h ${AMBED_DIR}/main.h.customized
-
 ## making ambed
+## AMBEd 1.5.0 settings (gains, AGC, filter ...) live in ambed.ini, not main.h - the s6 ambed service
+## writes /ambed/ambed.ini at start from AMBED_* env vars, upstream's copy is kept as ambed.ini.dist
 RUN cd ${AMBED_INST_DIR}${AMBED_DIR} \
     && make clean \
     && make \
     && make install \
-    && cp ${AMBED_INST_DIR}${AMBED_DIR}${AMBED_DIR} ${AMBED_DIR} \
-    && cp -a ${AMBED_DIR} ${ROOTFS}${AMBED_DIR}
+    && cp -a ${AMBED_DIR} ${ROOTFS}${AMBED_DIR} \
+    && mv ${ROOTFS}${AMBED_DIR}/ambed.ini ${ROOTFS}${AMBED_DIR}/ambed.ini.dist
 
 ################################
 ###### s6 overlay install ######
