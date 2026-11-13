@@ -10,17 +10,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+
+## [2.6.2] - 2026-11-13
+
 ### Changed
 - xlxd 2.6.1 -> 2.6.2 and AMBEd 1.4.0 -> 1.5.0 (LX3JL/xlxd `a978f03` -> `f13dfae`): xlxd M17 / YSF protocol
-  updates; AMBEd reworked AGC, per-mode gains, bandpass filter and stream-id fixes, configured from `ambed.ini`
+  updates; AMBEd reworked AGC, per-mode gains, bandpass filter and stream-id fixes, configured from `ambed.ini` (#22)
 - AMBEd: 1.5.0 takes an ini instead of the listen IP. The image writes `/ambed/ambed.ini` at start - `LISTEN_IP` =
   the container IP, plus every `AMBED_<KEY>` env var (`AMBED_USE_AGC`, `AMBED_PCM_TO_DMR`, ...);
-  `AMBED_CONFIG` uses your own ini instead. Upstream's annotated file is `/ambed/ambed.ini.dist`
-- Upstream check no longer runs (as a dry run) on every `v*` tag push - its `push` trigger is limited to branches
+  `AMBED_CONFIG` uses your own ini instead. Upstream's annotated file is `/ambed/ambed.ini.dist` (#22)
+- Upstream check no longer runs (as a dry run) on every `v*` tag push - its `push` trigger is limited to branches (#21)
 
 ### Removed
 - AMBEd `USE_AGC` build arg. It never took effect (the `sed` didn't write `main.h`), so AMBEd always ran with
-  AGC on; set `AMBED_USE_AGC=0` to turn it off
+  AGC on; set `AMBED_USE_AGC=0` to turn it off (#22)
 
 
 ## [2.6.1-4] - 2026-11-13
@@ -103,7 +106,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   optional `UBUNTU_MIRROR` build arg
 
 
-[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-4...HEAD
+[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2...HEAD
+[2.6.2]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-4...v2.6.2
 [2.6.1-4]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-3...v2.6.1-4
 [2.6.1-3]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-2...v2.6.1-3
 [2.6.1-2]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-1...v2.6.1-2
