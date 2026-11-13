@@ -27,6 +27,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - This changelog, and a GitHub release for each `v*` tag
 
 ### Changed
+- AMBEd: two-stage build - ambed is compiled in a build stage and the image is a clean ubuntu with only ambed,
+  libftd2xx, s6-overlay and `kmod` / `lsof` / `sudo`. The compiler (~168 MiB compressed) is no longer shipped;
+  `curl` / `wget` are gone from the image. The build fails if ambed or libftd2xx is missing a runtime library (#16)
 - XLXd: YSF auto-link and IMRS default module are `A` again, set by the new build args `YSF_AUTOLINK_MODULE` /
   `IMRS_DEFAULT_MODULE` - upstream 2.6 moved both to `B`, the parrot module on XLX349 (#8)
 

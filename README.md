@@ -338,7 +338,8 @@ Changes are listed in [`CHANGELOG.md`](./CHANGELOG.md). Add them under `## [Unre
 Only changes under `AMBEd/`, `XLXd/`, `NXDNReflector/`, `P25Reflector/`, `NXDNDashboard/`, `P25Dashboard/` or the workflow itself trigger a build. The workflow needs the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub personal access token with Read & Write).
 
 Build notes:
-- ftdichip.com refuses scripted downloads, so the AMBEd build falls back to the libftd2xx 1.4.33 files in the previously published `cbodden/ambed-docker:latest` (`FTDI_FALLBACK_IMAGE`).
+- ftdichip.com refuses scripted downloads, so the AMBEd build falls back to the libftd2xx 1.4.33 files in the previously published `cbodden/ambed-docker:latest` (`FTDI_FALLBACK_IMAGE`). The image keeps `/usr/local/lib/libftd2xx.so.*` and `/usr/local/include/{ftd2xx,WinTypes}.h` for this - don't drop them.
+- AMBEd is a two-stage build: the `build` stage compiles ambed and lays out `/rootfs` (ambed, libftd2xx, s6-overlay), the final image is a clean Ubuntu with `/rootfs` and the runtime packages only. Libraries ambed needs at runtime go in its `apt install`; the build fails if `ldd` reports one missing.
 - The GitHub amd64 runners use Azure's Ubuntu mirror for AMBEd (`UBUNTU_MIRROR` build arg); local builds use the default archive.
 
 ### Upgrading
