@@ -14,6 +14,8 @@ on:
         type: boolean
         default: false
   push:
+    ## branches only - tag pushes ignore the paths filter, so without this every vX.Y.Z tag ran a dry run
+    branches: ['**']
     paths:
       - '.github/workflows/upstream-check.yml'
       - '.github/scripts/upstream-check.sh'
