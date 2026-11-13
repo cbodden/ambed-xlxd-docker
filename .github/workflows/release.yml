@@ -1,0 +1,58 @@
+## creates the GitHub release for a vX.Y.Z[-N] tag, notes = that version's section of CHANGELOG.md
+##   tag push       -> release from the CHANGELOG.md in the tag (fails if the section is missing)
+##   manual run     -> create / refresh the release of an existing tag from the default branch's CHANGELOG.md
+## the images for the tag are published by docker-images.yml
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'existing tag, e.g. v2.6.1-3'
+        required: true
+      latest:
+        description: 'mark as the latest release'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: notes from CHANGELOG.md
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          ver="${TAG#v}"
+          ## lines after "## [ver]" up to the next version heading or the link references
+          awk -v h="## [${ver}]" '
+            index($0, h) == 1 { f = 1 ; next }
+            f && (/^## \[/ || /^\[[^]]+\]: /) { exit }
+            f
+          ' CHANGELOG.md | sed -e '/./,$!d' | sed -e ':a' -e '/^\n*$/{$d;N;ba' -e '}' > "${RUNNER_TEMP}/notes.md"
+          if [ ! -s "${RUNNER_TEMP}/notes.md" ]; then
+            echo "::error::CHANGELOG.md has no '## [${ver}]' section - add it, then re-run this workflow for ${TAG}"
+            exit 1
+          fi
+          printf '\n**Images:** `cbodden/<image>:%s` on Docker Hub and `ghcr.io/cbodden/<image>:%s` - see the [README](https://github.com/%s/blob/%s/README.md#images).\n' \
+            "${ver}" "${ver}" "${GITHUB_REPOSITORY}" "${TAG}" >> "${RUNNER_TEMP}/notes.md"
+          cat "${RUNNER_TEMP}/notes.md"
+
+      - name: create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+          LATEST: ${{ github.event_name == 'push' || inputs.latest }}
+        run: |
+          if gh release view "${TAG}" > /dev/null 2>&1; then
+            gh release edit "${TAG}" --title "${TAG}" --notes-file "${RUNNER_TEMP}/notes.md" --latest="${LATEST}"
+          else
+            gh release create "${TAG}" --verify-tag --title "${TAG}" --notes-file "${RUNNER_TEMP}/notes.md" --latest="${LATEST}"
+          fi

@@ -330,8 +330,10 @@ Images are built by GitHub Actions ([`.github/workflows/docker-images.yml`](./.g
 | :---- | :-------- |
 | push to `testing` | `:test` |
 | merge / push to `main` | `:latest` |
-| push a `vX.Y.Z` tag | `:X.Y.Z` |
+| push a `vX.Y.Z` tag | `:X.Y.Z` + a GitHub release |
 | weekly (Monday) | `:latest` rebuilt from `main` for base image updates |
+
+Changes are listed in [`CHANGELOG.md`](./CHANGELOG.md). Add them under `## [Unreleased]` with the change; when tagging, rename that heading to the version (`## [2.6.2] - YYYY-MM-DD`), add a new empty `## [Unreleased]` above it and the compare links at the bottom. A tag push runs [`release.yml`](./.github/workflows/release.yml), which creates the GitHub release with that version's section as the notes - it fails if the section is missing. Re-run it from the Actions tab with the tag to create or refresh the release of an existing tag (it then reads `CHANGELOG.md` from `main`).
 
 Only changes under `AMBEd/`, `XLXd/`, `NXDNReflector/`, `P25Reflector/`, `NXDNDashboard/`, `P25Dashboard/` or the workflow itself trigger a build. The workflow needs the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub personal access token with Read & Write).
 
@@ -357,7 +359,8 @@ DRY_RUN=true REPO=cbodden/ambed-xlxd-docker bash .github/scripts/upstream-check.
 To upgrade:
 1. Wait for the build check on the upstream PR, read it, and merge it into `testing` - CI publishes `:test`; run it against real hardware
 2. Merge `testing` into `main` - CI publishes `:latest`
-3. Tag the release, e.g. `git tag v2.6.2 origin/main && git push origin v2.6.2` - CI publishes `:2.6.2`
+3. Move the `## [Unreleased]` entries in `CHANGELOG.md` under the new version (via `testing` -> `main` like any change)
+4. Tag the release, e.g. `git tag v2.6.2 origin/main && git push origin v2.6.2` - CI publishes `:2.6.2` and the GitHub release
 
 To bump a pin by hand instead, set the `ARG` in every Dockerfile that has it and push to `testing`; any open upstream PR for it is closed on the next run.
 
