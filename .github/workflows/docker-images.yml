@@ -143,15 +143,26 @@ jobs:
 
       - name: create multi-arch manifests
         working-directory: ${{ runner.temp }}/digests
+        ## ghcr first, and one registry failing (docker hub's pull limit) doesn't stop the other - the job still fails
+        ## the inspect is only done on ghcr: on docker hub it's extra reads that count against the pull limit
         run: |
-          for repo in docker.io/cbodden/${{ matrix.image }} ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}; do
+          failed=""
+          for repo in ghcr.io/${{ github.repository_owner }}/${{ matrix.image }} docker.io/cbodden/${{ matrix.image }}; do
             tags=$(jq -cr --arg r "${repo}:" '.tags | map(select(startswith($r))) | map("-t " + .) | join(" ")' <<< "${DOCKER_METADATA_OUTPUT_JSON}")
             if [ -z "${tags}" ]; then
               echo "no tags for ${GITHUB_REF} - skipping ${repo}"
               continue
             fi
-            docker buildx imagetools create ${tags} $(printf "${repo}@sha256:%s " *)
-            for t in $(jq -r --arg r "${repo}:" '.tags[] | select(startswith($r))' <<< "${DOCKER_METADATA_OUTPUT_JSON}"); do
-              docker buildx imagetools inspect "${t}"
-            done
+            if ! docker buildx imagetools create ${tags} $(printf "${repo}@sha256:%s " *); then
+              echo "::error::publishing ${repo} failed"
+              failed="${failed} ${repo}"
+              continue
+            fi
+            case "${repo}" in
+              ghcr.io/*)
+                for t in $(jq -r --arg r "${repo}:" '.tags[] | select(startswith($r))' <<< "${DOCKER_METADATA_OUTPUT_JSON}"); do
+                  docker buildx imagetools inspect "${t}"
+                done ;;
+            esac
           done
+          [ -z "${failed}" ] || exit 1
