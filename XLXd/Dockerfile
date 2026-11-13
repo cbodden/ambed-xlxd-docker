@@ -11,8 +11,8 @@ ENV MODULES="26"
 ENV XLXD_DIR=/xlxd XLXD_INST_DIR=/src/xlxd XLXD_WEB_DIR=/var/www/xlxd
 ENV XLXCONFIG=/var/www/xlxd/pgs/config.inc.php
 ARG TARGETARCH
-## LX3JL/xlxd commit : xlxd 2.6.1 / AMBEd 1.4.0
-ARG XLXD_GIT_REF=a978f03671d87c6d9ac13453689755991e5cb668
+## LX3JL/xlxd commit : xlxd 2.6.2 / AMBEd 1.5.0
+ARG XLXD_GIT_REF=f13dfaebb5759ae8fdf32ed7adaa29421f67a993
 ## module a YSF client lands on when it doesn't pick one, and the IMRS (Wires-X) default module
 ## upstream 2.6 uses B; A keeps them off a parrot / special-purpose module B
 ARG YSF_AUTOLINK_MODULE=A IMRS_DEFAULT_MODULE=A

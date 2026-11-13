@@ -23,6 +23,9 @@ services:
     #   - "/dev/bus/usb/001/:/dev/bus/usb/001/"
     # device_cgroup_rules:
     #   - 'c 188:* rwm'
+    # environment:            # optional ambed.ini settings, see README "AMBEd settings"
+    #   AMBED_USE_AGC: "1"
+    #   AMBED_PCM_TO_DMR: "0"
     ports:
       - 10100:10100/udp       # ambe controller
       - 10101-10199:10101-10199/udp # ambe transcoding streams
