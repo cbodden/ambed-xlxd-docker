@@ -45,7 +45,8 @@ FTDI testing done with:
 - 2 x DVSI AMBE3000
 - 1 x DVMEGA DVstick 33
 ```
-Starting AMBEd 1.4.0
+Config: LISTEN_IP=172.18.0.2 LISTEN_PORT=10100 ... USE_AGC=1 AGC_TARGET=-41 AGC_CLAMPING=9 ... USE_BANDPASSFILTER=1 STREAM_ACTIVITY_TIMEOUT=3 TUNING_LOG=1
+Starting AMBEd 1.5.0
 
 Initializing vocodecs:
 Detected 3 USB-FTDI devices
@@ -73,7 +74,8 @@ Initializing controller
 
 Max concurrent streams: 2 (from 4 vocoder channels)
 
-AMBEd started and listening on 0.0.0.0
+AMBEd started and listening on 172.18.0.2:10100
+Voice packets marked as DSCP 46
 ```
 
 AMBEd also includes software IMBE (P25) and Codec2 (M17) vocoders, so P25 and M17 transcoding work alongside the DVSI hardware.
