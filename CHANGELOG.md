@@ -15,8 +15,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   digests as Docker Hub's official images), BuildKit from `mirror.gcr.io/moby/buildkit`, the `# syntax=` Dockerfile
   frontend from `mirror.gcr.io/docker/dockerfile`, the AMBEd libftd2xx
   fallback image from GHCR. Three full builds in an hour hit Docker Hub's pull limit (v2.6.2 needed 3 attempts)
-- Publishing tags GHCR first and doesn't stop when Docker Hub fails (the job still fails), so a Docker Hub
-  limit no longer leaves GHCR without the tag; the post-publish `imagetools inspect` only runs on GHCR
+- Builds push to GHCR only; the publish jobs tag GHCR first, then copy the images from GHCR to Docker Hub. A
+  Docker Hub limit now only fails the Docker Hub copy (rerun the publish job) - before, it failed the builds and
+  left GHCR without the tag too. The post-publish `imagetools inspect` only runs on GHCR
 
 
 ## [2.6.2] - 2026-11-13
