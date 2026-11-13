@@ -10,6 +10,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- Upstream check no longer runs (as a dry run) on every `v*` tag push - its `push` trigger is limited to branches
+
 
 ## [2.6.1-4] - 2026-11-13
 
