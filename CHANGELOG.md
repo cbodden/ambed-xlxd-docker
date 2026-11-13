@@ -10,6 +10,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+
+## [2.6.1-4] - 2026-11-13
+
 ### Added
 - NXDNReflector / P25Reflector images (`cbodden/nxdnreflector-docker`, `cbodden/p25reflector-docker`): G4KLX's
   reflectors built from the last NXDNClients / P25Clients commits that had them (removed upstream Feb 2023,
@@ -24,12 +27,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - XLXd dashboard switches from the environment: `REFLECTORS_PAGE`, `IRCDDB_PAGE` / `IRCDDB_URL`, `TRAFFIC_PAGE`
   (vnstatd s6 service), `LASTHEARD_LIMIT`, `REPEATERS_LIMIT`, `PEERS_LIMIT`, `PAGE_REFRESH`, `IP_DISPLAY` (#9)
 - Weekly upstream check also watches pYSFReflector3 and the three Dashboard2 repos (#14)
-- This changelog, and a GitHub release for each `v*` tag
+- This changelog, and a GitHub release for each `v*` tag (#18)
 
 ### Changed
 - AMBEd: two-stage build - ambed is compiled in a build stage and the image is a clean ubuntu with only ambed,
   libftd2xx, s6-overlay and `kmod` / `lsof` / `sudo`. The compiler (~168 MiB compressed) is no longer shipped;
-  `curl` / `wget` are gone from the image. The build fails if ambed or libftd2xx is missing a runtime library (#16)
+  `curl` / `wget` are gone from the image. The build fails if ambed or libftd2xx is missing a runtime library.
+  Image 214 -> 54 MiB compressed (amd64) (#16, #19)
 - XLXd: YSF auto-link and IMRS default module are `A` again, set by the new build args `YSF_AUTOLINK_MODULE` /
   `IMRS_DEFAULT_MODULE` - upstream 2.6 moved both to `B`, the parrot module on XLX349 (#8)
 
@@ -87,7 +91,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   optional `UBUNTU_MIRROR` build arg
 
 
-[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-3...HEAD
+[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-4...HEAD
+[2.6.1-4]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-3...v2.6.1-4
 [2.6.1-3]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-2...v2.6.1-3
 [2.6.1-2]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-1...v2.6.1-2
 [2.6.1-1]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1...v2.6.1-1
