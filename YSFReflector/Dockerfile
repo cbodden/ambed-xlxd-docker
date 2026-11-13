@@ -2,7 +2,7 @@
 ## ysfreflector
 ## IU5JAE's pYSFReflector3 (G4KLX's YSFReflector was removed from YSFClients in Feb 2023).
 ## xlxd peers it onto one XLX module; YSF hotspots / radios connect to it like any YSF reflector.
-FROM alpine:latest
+FROM mirror.gcr.io/library/alpine:latest
 
 ARG PYSF_GIT_REF=8a9dbd755c45872d14f5a8bd1a22245d24bf7755
 

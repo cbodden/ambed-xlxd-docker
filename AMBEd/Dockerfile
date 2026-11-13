@@ -6,14 +6,16 @@
 
 ## previously published image used as a libftd2xx fallback (ftdichip.com 403s non-browser downloads)
 ## the final image keeps /usr/local/lib/libftd2xx.so.* and /usr/local/include/{ftd2xx,WinTypes}.h for this
-ARG FTDI_FALLBACK_IMAGE=cbodden/ambed-docker:latest
+## from ghcr (same image as docker hub's) so the build doesn't use up docker hub's pull limit
+ARG FTDI_FALLBACK_IMAGE=ghcr.io/cbodden/ambed-docker:latest
 FROM ${FTDI_FALLBACK_IMAGE} AS ftdi_fallback
 
 ##########################################
 ###### ubuntu + apt settings (both) ######
 ##########################################
 
-FROM ubuntu:latest AS ubuntu
+## docker hub's official ubuntu via google's mirror (same digests, no docker hub pull limit)
+FROM mirror.gcr.io/library/ubuntu:latest AS ubuntu
 
 ## optional ubuntu archive mirror (ex: http://azure.archive.ubuntu.com/ubuntu on github amd64 runners)
 ARG UBUNTU_MIRROR

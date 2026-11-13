@@ -10,6 +10,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- Builds no longer pull from Docker Hub: Alpine / Ubuntu base images from `mirror.gcr.io/library/...` (same
+  digests as Docker Hub's official images), BuildKit from `mirror.gcr.io/moby/buildkit`, the AMBEd libftd2xx
+  fallback image from GHCR. Three full builds in an hour hit Docker Hub's pull limit (v2.6.2 needed 3 attempts)
+
 
 ## [2.6.2] - 2026-11-13
 

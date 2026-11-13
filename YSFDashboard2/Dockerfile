@@ -2,7 +2,7 @@
 ## ysfdashboard2
 ## ShaYmez/YSFReflector-Dashboard2 for the ysfreflector image: reads the reflector's dated log files and
 ## YSFReflector.ini (written there for it) from its shared log volume, mounted read only
-FROM alpine:latest
+FROM mirror.gcr.io/library/alpine:latest
 
 ARG DASH_GIT_REF=8a9d3b468470b9ab4fad7c244755c03accf331b2
 

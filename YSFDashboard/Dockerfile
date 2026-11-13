@@ -2,7 +2,7 @@
 ## ysfdashboard
 ## pYSFReflector3's own dashboard (IK5XMK's collector3 + php pages) for the ysfreflector image:
 ## the collector pulls the reflector's json feed (YSF_JSON_HOST:YSF_JSON_PORT) into sqlite, apache serves the pages
-FROM alpine:latest
+FROM mirror.gcr.io/library/alpine:latest
 
 ARG PYSF_GIT_REF=8a9dbd755c45872d14f5a8bd1a22245d24bf7755
 
