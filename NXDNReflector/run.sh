@@ -28,7 +28,7 @@ case "$(printf '%s' "${NXDN_LOG_FILE:-off}" | tr 'A-Z' 'a-z')" in
     find "${LOGDIR}" -name 'NXDNReflector-*.log' -mtime +"${NXDN_LOG_KEEP_DAYS:-7}" -delete 2> /dev/null || true
     # prune once a day while running (the reflector exec's below, this keeps going alongside it)
     ( while sleep 86400; do
-        find "${LOGDIR}" -name 'NXDNReflector-*.log' -mtime +"${NXDN_LOG_KEEP_DAYS:-7}" -delete 2> /dev/null
+        find "${LOGDIR}" -name 'NXDNReflector-*.log' -mtime +"${NXDN_LOG_KEEP_DAYS:-7}" -delete 2> /dev/null || true
       done ) &
     ;;
   *) FILELEVEL=0 ;;
