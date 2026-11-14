@@ -1,8 +1,8 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 ## p25dashboard
 ## ShaYmez/P25Reflector-Dashboard2 for the p25reflector image: reads the reflector's log files and
 ## ini from its shared log volume (P25_LOG_FILE=on on the reflector), mounted read only
-FROM alpine:latest
+FROM mirror.gcr.io/library/alpine:latest
 
 ARG DASH_GIT_REF=fd30c16833f855632110942518429586c811b25d
 

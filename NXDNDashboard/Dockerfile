@@ -1,8 +1,8 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 ## nxdndashboard
 ## ShaYmez/NXDNReflector-Dashboard2 for the nxdnreflector image: reads the reflector's log files and
 ## ini from its shared log volume (NXDN_LOG_FILE=on on the reflector), mounted read only
-FROM alpine:latest
+FROM mirror.gcr.io/library/alpine:latest
 
 ARG DASH_GIT_REF=10168c2ff852d08d2897e81a4d24eb38ec3e23f5
 

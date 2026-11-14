@@ -1,5 +1,8 @@
 ## builds the AMBEd, XLXd, NXDN / P25 / YSF reflector && dashboard images for amd64 + arm64 on native runners
-## and pushes multi-arch tags to docker hub && ghcr
+## and pushes multi-arch tags to ghcr && docker hub
+##   build   : each platform is pushed by digest to ghcr only
+##   publish : multi-arch tags on ghcr, then copied from ghcr to docker hub - docker hub's pull limit
+##             can then only fail the docker hub copy (rerun the publish job), never the build or ghcr
 ##   testing branch -> :test
 ##   main branch    -> :latest
 ##   vX.Y.Z tag     -> :X.Y.Z
@@ -52,13 +55,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      ## buildkit from google's mirror of docker hub - every job pulled it from docker hub and used up the pull limit
       - uses: docker/setup-buildx-action@v3
-
-      - name: login docker hub
-        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          driver-opts: image=mirror.gcr.io/moby/buildkit:buildx-stable-1
 
       - name: login ghcr
         uses: docker/login-action@v3
@@ -77,7 +77,7 @@ jobs:
             UBUNTU_MIRROR=${{ matrix.platform.ubuntu_mirror }}
           cache-from: type=gha,scope=${{ matrix.image.name }}-${{ matrix.platform.arch }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}-${{ matrix.platform.arch }}
-          outputs: type=image,"name=docker.io/cbodden/${{ matrix.image.name }},ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}",push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }},push-by-digest=true,name-canonical=true,push=true
 
       - name: export digest
         run: |
@@ -107,7 +107,10 @@ jobs:
           pattern: digests-${{ matrix.image }}-*
           merge-multiple: true
 
+      ## buildkit from google's mirror of docker hub - every job pulled it from docker hub and used up the pull limit
       - uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: image=mirror.gcr.io/moby/buildkit:buildx-stable-1
 
       - name: login docker hub
         uses: docker/login-action@v3
@@ -137,15 +140,28 @@ jobs:
 
       - name: create multi-arch manifests
         working-directory: ${{ runner.temp }}/digests
+        ## the platform digests only exist on ghcr - both registries' tags are made from them (docker hub's by copying)
+        ## ghcr first, and one registry failing (docker hub's pull limit) doesn't stop the other - the job still fails
+        ## the inspect is only done on ghcr: on docker hub it's extra reads that count against the pull limit
         run: |
-          for repo in docker.io/cbodden/${{ matrix.image }} ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}; do
+          src=ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          failed=""
+          for repo in ghcr.io/${{ github.repository_owner }}/${{ matrix.image }} docker.io/cbodden/${{ matrix.image }}; do
             tags=$(jq -cr --arg r "${repo}:" '.tags | map(select(startswith($r))) | map("-t " + .) | join(" ")' <<< "${DOCKER_METADATA_OUTPUT_JSON}")
             if [ -z "${tags}" ]; then
               echo "no tags for ${GITHUB_REF} - skipping ${repo}"
               continue
             fi
-            docker buildx imagetools create ${tags} $(printf "${repo}@sha256:%s " *)
-            for t in $(jq -r --arg r "${repo}:" '.tags[] | select(startswith($r))' <<< "${DOCKER_METADATA_OUTPUT_JSON}"); do
-              docker buildx imagetools inspect "${t}"
-            done
+            if ! docker buildx imagetools create ${tags} $(printf "${src}@sha256:%s " *); then
+              echo "::error::publishing ${repo} failed"
+              failed="${failed} ${repo}"
+              continue
+            fi
+            case "${repo}" in
+              ghcr.io/*)
+                for t in $(jq -r --arg r "${repo}:" '.tags[] | select(startswith($r))' <<< "${DOCKER_METADATA_OUTPUT_JSON}"); do
+                  docker buildx imagetools inspect "${t}"
+                done ;;
+            esac
           done
+          [ -z "${failed}" ] || exit 1

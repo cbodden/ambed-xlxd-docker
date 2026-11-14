@@ -1,6 +1,6 @@
 ## xlx
-# syntax=docker/dockerfile:1-labs
-FROM alpine:latest
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
+FROM mirror.gcr.io/library/alpine:latest
 
 ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8"
 ## runtime defaults - URL && XLXNUM must be set by the stack

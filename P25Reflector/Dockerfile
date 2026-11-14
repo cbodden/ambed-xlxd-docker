@@ -1,8 +1,8 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 ## p25reflector
 ## G4KLX's P25Reflector - removed from g4klx/P25Clients in Feb 2023 (aa9ded6), so this builds the
 ## last commit that still had it. The code is frozen upstream; nothing to track.
-FROM alpine:latest AS build
+FROM mirror.gcr.io/library/alpine:latest AS build
 
 ARG P25_GIT_REF=a842b8d94ffa030a6269bf2e66c6a205e8281221
 
@@ -16,7 +16,7 @@ RUN cd /src/P25Reflector \
         CFLAGS="-O2 -Wall -DHAVE_LOG_H -DUDP_SOCKET_MAX=2 -std=c++0x -pthread -include cstdint" \
     && strip P25Reflector
 
-FROM alpine:latest
+FROM mirror.gcr.io/library/alpine:latest
 
 ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8" TZ="UTC"
 ## runtime settings - see README

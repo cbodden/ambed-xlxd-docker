@@ -1,8 +1,8 @@
-# syntax=docker/dockerfile:1-labs
+# syntax=mirror.gcr.io/docker/dockerfile:1-labs
 ## nxdnreflector
 ## G4KLX's NXDNReflector - removed from g4klx/NXDNClients in Feb 2023 (486106a), so this builds the
 ## last commit that still had it. The code is frozen upstream; nothing to track.
-FROM alpine:latest AS build
+FROM mirror.gcr.io/library/alpine:latest AS build
 
 ARG NXDN_GIT_REF=3bc2a1415b1a4454abd8622e59631bbe781fefc7
 
@@ -16,7 +16,7 @@ RUN cd /src/NXDNReflector \
         CFLAGS="-O2 -Wall -DHAVE_LOG_H -DUDP_SOCKET_MAX=2 -std=c++0x -pthread -include cstdint" \
     && strip NXDNReflector
 
-FROM alpine:latest
+FROM mirror.gcr.io/library/alpine:latest
 
 ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8" TZ="UTC"
 ## runtime settings - see README
