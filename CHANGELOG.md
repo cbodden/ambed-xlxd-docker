@@ -19,6 +19,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   Docker Hub limit now only fails the Docker Hub copy (rerun the publish job) - before, it failed the builds and
   left GHCR without the tag too. The post-publish `imagetools inspect` only runs on GHCR
 
+### Fixed
+- ysfreflector: `docker logs` went silent after the first UTC midnight. The loop that follows the day's log file
+  stops `tail` with `timeout` at midnight; `timeout` then exits non-zero and the inherited `set -e` ended the loop
+  instead of moving to the new day's file. The logs themselves were fine (`/var/log/ysfreflector`)
+- nxdnreflector / p25reflector / ysfreflector: the daily old-log prune loop could stop the same way on a failed
+  `find`
+
 
 ## [2.6.2] - 2026-11-13
 

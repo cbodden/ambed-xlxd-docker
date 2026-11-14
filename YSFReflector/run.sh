@@ -51,17 +51,18 @@ APRS=$(need_bool "${YSF_APRS}" YSF_APRS)
 [ -e "${DATA}/deny.db" ] || cp /usr/local/share/pysfreflector/deny.db "${DATA}/deny.db"
 [ -e "${DATA}/home.db" ] || cp /usr/local/share/pysfreflector/home.db "${DATA}/home.db"
 
-## old dated logs
+## old dated logs (|| true in the loops : set -e is inherited, one failed command would end them)
 find "${LOGDIR}" -name 'YSFReflector-*.log' -mtime +"${YSF_LOG_KEEP_DAYS}" -delete 2> /dev/null || true
 ( while sleep 86400; do
-    find "${LOGDIR}" -name 'YSFReflector-*.log' -mtime +"${YSF_LOG_KEEP_DAYS}" -delete 2> /dev/null
+    find "${LOGDIR}" -name 'YSFReflector-*.log' -mtime +"${YSF_LOG_KEEP_DAYS}" -delete 2> /dev/null || true
   done ) &
 
 ## pYSF3 only logs to its dated (UTC) file - follow today's file to stdout for docker logs, switching at midnight
+## (timeout exits non-zero when it stops tail at midnight - without || true set -e ended this loop on day one)
 ( FROM=0
   while :; do
     timeout $(( 86400 - $(date -u +%s) % 86400 + 2 )) \
-      tail -n "${FROM}" -F "${LOGDIR}/YSFReflector-$(date -u +%Y-%m-%d).log" 2> /dev/null
+      tail -n "${FROM}" -F "${LOGDIR}/YSFReflector-$(date -u +%Y-%m-%d).log" 2> /dev/null || true
     FROM=+1
   done ) &
 
