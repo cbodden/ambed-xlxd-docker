@@ -10,6 +10,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+
+## [2.6.2-2] - 2026-11-15
+
 ### Added
 - XLXd: an optional dashboard page of your own (`INFO_PAGE`, `INFO_PAGE_TITLE`, `INFO_PAGE_FILE`) - shows an
   HTML file from `/config` (default `info.html`) under the dashboard's header and menu, with a menu link after
@@ -132,7 +135,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   optional `UBUNTU_MIRROR` build arg
 
 
-[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2-1...HEAD
+[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2-2...HEAD
+[2.6.2-2]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2-1...v2.6.2-2
 [2.6.2-1]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2...v2.6.2-1
 [2.6.2]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-4...v2.6.2
 [2.6.1-4]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-3...v2.6.1-4
