@@ -18,6 +18,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Builds push to GHCR only; the publish jobs tag GHCR first, then copy the images from GHCR to Docker Hub. A
   Docker Hub limit now only fails the Docker Hub copy (rerun the publish job) - before, it failed the builds and
   left GHCR without the tag too. The post-publish `imagetools inspect` only runs on GHCR
+- XLXd: YSF clients that don't pick a module now land on `G` (`YSF_AUTOLINK_MODULE`, was `A`) - XLX349's modules
+  were rearranged and `A` is now the parrot. `IMRS_DEFAULT_MODULE` stays `A`
 
 ### Fixed
 - ysfreflector: `docker logs` went silent after the first UTC midnight. The loop that follows the day's log file

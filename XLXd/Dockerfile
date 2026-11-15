@@ -14,8 +14,8 @@ ARG TARGETARCH
 ## LX3JL/xlxd commit : xlxd 2.6.2 / AMBEd 1.5.0
 ARG XLXD_GIT_REF=f13dfaebb5759ae8fdf32ed7adaa29421f67a993
 ## module a YSF client lands on when it doesn't pick one, and the IMRS (Wires-X) default module
-## upstream 2.6 uses B; A keeps them off a parrot / special-purpose module B
-ARG YSF_AUTOLINK_MODULE=A IMRS_DEFAULT_MODULE=A
+## upstream 2.6 uses B; YSF lands on G (XLX349's YSF module), IMRS stays on A
+ARG YSF_AUTOLINK_MODULE=G IMRS_DEFAULT_MODULE=A
 ARG S6_OVERLAY_VERSION=3.2.3.2 S6_OVERLAY_INST=/src/S6
 ARG S6_OVERLAY_ADDRESS=https://github.com/just-containers/s6-overlay/releases/download/v
 

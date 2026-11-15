@@ -212,7 +212,7 @@ These are compiled in, so changing them means building the image with `--build-a
 
 | Build arg | Image | Default | Description |
 | :-------- | :---- | :------ | :---------- |
-| `YSF_AUTOLINK_MODULE` | XLXd | `A` | Module a YSF client is linked to when it doesn't pick one (upstream 2.6 uses `B`) |
+| `YSF_AUTOLINK_MODULE` | XLXd | `G` | Module a YSF client is linked to when it doesn't pick one (upstream 2.6 uses `B`; DG-ID 10-35 still picks A-Z) |
 | `IMRS_DEFAULT_MODULE` | XLXd | `A` | Default module for Yaesu IMRS (Wires-X) clients (upstream 2.6 uses `B`) |
 
 AMBEd's settings (AGC, gains, filter) are no longer build-time options - see [AMBEd settings](#ambed-settings-ambedini).
