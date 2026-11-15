@@ -80,7 +80,9 @@ RUN cat /src/sanitize_module_name.php >> ${XLXD_WEB_DIR}/pgs/functions.php \
 
 ## upstream always shows the Reflectors list - add a ReflectorsPage['Show'] option (REFLECTORS_PAGE)
 ## that the menu and the page switch honour; fails the build if upstream's markup moved
+## plus an optional info page (INFO_PAGE) that shows the operator's own HTML file
 COPY scripts/patch-dashboard.sh /src/patch-dashboard.sh
+COPY dashboard/info.php ${XLXD_WEB_DIR}/pgs/info.php
 RUN sh /src/patch-dashboard.sh ${XLXD_WEB_DIR}
 
 #################################

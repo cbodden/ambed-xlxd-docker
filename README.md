@@ -150,6 +150,9 @@ Dashboard pages and lists. Switches take `on`/`off` (also `true`/`false`, `enabl
 | `PEERS_LIMIT` | `99` | Rows on the Peers page (1-999) |
 | `PAGE_REFRESH` | `10` | Dashboard auto-refresh in seconds (0-3600); `0` turns auto-refresh off |
 | `IP_DISPLAY` | `hide` | How much of a repeater / peer IP to show: `hide`, `last1`, `last2`, `last3` (bytes) or `full` |
+| `INFO_PAGE` | `off` | A page of your own - how to connect, module list, rules - with a menu link right after "Users / Modules". It shows the HTML in `INFO_PAGE_FILE` as is, under the dashboard's header and menu, and doesn't auto-refresh |
+| `INFO_PAGE_TITLE` | `Info` | Its menu link |
+| `INFO_PAGE_FILE` | `/config/info.html` | The HTML it shows: a fragment (no `<html>` / `<head>` / `<body>`), read on every page view, so edits show up without a restart. A missing file shows an error on the page |
 
 NXDN / P25 / YSF reflector peers - added to `xlxd.interlink` at every start (see [NXDN and P25 reflectors](#6-nxdn-and-p25-reflectors), [YSF reflector](#8-ysf-reflector-and-dashboard)):
 
@@ -172,7 +175,7 @@ The dashboard config is regenerated from these variables each time a new contain
 
 | Mount | Purpose |
 | :---- | :------ |
-| `/config` | Files copied into `/xlxd` at every start: `xlxd.whitelist`, `xlxd.blacklist`, `xlxd.interlink`, `xlxd.terminal`, and the calling-home hash `callinghome.php`. `log/xlxd.xml` here is restored at start so the dashboard has history immediately. Note the start-up copy is `cp /config/*.* /xlxd`: every file with a dot in its name is copied, so a leftover `main.h.customized`, `cysfprotocol.cpp.customized` or `config.inc.php` from an older install overwrites the image's reference copies in `/xlxd`. xlxd doesn't read those (the dashboard config is regenerated from the environment), but they're misleading - keep `/config` to the files above |
+| `/config` | Files copied into `/xlxd` at every start: `xlxd.whitelist`, `xlxd.blacklist`, `xlxd.interlink`, `xlxd.terminal`, and the calling-home hash `callinghome.php`. `log/xlxd.xml` here is restored at start so the dashboard has history immediately. Note the start-up copy is `cp /config/*.* /xlxd`: every file with a dot in its name is copied, so a leftover `main.h.customized`, `cysfprotocol.cpp.customized` or `config.inc.php` from an older install overwrites the image's reference copies in `/xlxd`. xlxd doesn't read those (the dashboard config is regenerated from the environment), but they're misleading - keep `/config` to the files above (plus `info.html` with `INFO_PAGE=on`) |
 | `/var/www/xlxd/css/layout.css`, `/var/www/xlxd/img/<file>` | Optional dashboard theme - mount **single files** over the image's dashboard (see below) |
 | `/var/lib/vnstat` | Optional, with `TRAFFIC_PAGE=on`: the vnstat database, so traffic history survives a new container. Without it, history starts over on every re-create |
 

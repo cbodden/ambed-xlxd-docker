@@ -85,6 +85,15 @@ if [ -n "${IRCDDB_URL:-}" ]; then
   # turn the shipped commented-out example into a live setting
   sed -i "s|^//[[:blank:]]*\(\$PageOptions\['IRCDDB'\]\['URL'\][[:blank:]]*=[[:blank:]]*\)'[^']*'|\1'$(printf '%s' "${IRCDDB_URL}" | sed 's/[|&]/\\&/g')'|" ${XLXCONFIG}
 fi
+SHOW=$(env_bool "${INFO_PAGE:-}" false INFO_PAGE)
+sed -i "s/\(PageOptions\['InfoPage'\]\['Show'\][[:blank:]]*\=[[:blank:]]*\)[[:alpha:]]*/\1${SHOW}/g" ${XLXCONFIG}
+# title and file are single quoted in the dashboard config - escape \ and ' for php, then \ & | for sed
+for OPT in Title:INFO_PAGE_TITLE File:INFO_PAGE_FILE; do
+  VAR=${OPT#*:}
+  [ -z "${!VAR:-}" ] && continue
+  VALUE=$(printf '%s' "${!VAR}" | sed -e "s/[\\\\']/\\\\&/g" -e 's/[\\&|]/\\&/g')
+  sed -i "s|\(PageOptions\['InfoPage'\]\['${OPT%%:*}'\][[:blank:]]*\=[[:blank:]]*\)'.*';|\1'${VALUE}';|" ${XLXCONFIG}
+done
 sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/peers.php # convert date format to US
 sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/repeaters.php # convert date format to US
 sed -i "s/d\.m\.Y/m\/d\/Y/g" ${XLXD_WEB_DIR}/pgs/traffic.php # convert date format to US
