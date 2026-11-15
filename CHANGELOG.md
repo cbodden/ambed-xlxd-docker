@@ -13,7 +13,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - XLXd: an optional dashboard page of your own (`INFO_PAGE`, `INFO_PAGE_TITLE`, `INFO_PAGE_FILE`) - shows an
   HTML file from `/config` (default `info.html`) under the dashboard's header and menu, with a menu link after
-  "Users / Modules". Off by default
+  "Users / Modules". Off by default (#28)
 
 
 ## [2.6.2-1] - 2026-11-15
