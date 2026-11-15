@@ -10,23 +10,26 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+
+## [2.6.2-1] - 2026-11-15
+
 ### Changed
 - Builds no longer pull from Docker Hub: Alpine / Ubuntu base images from `mirror.gcr.io/library/...` (same
   digests as Docker Hub's official images), BuildKit from `mirror.gcr.io/moby/buildkit`, the `# syntax=` Dockerfile
   frontend from `mirror.gcr.io/docker/dockerfile`, the AMBEd libftd2xx
-  fallback image from GHCR. Three full builds in an hour hit Docker Hub's pull limit (v2.6.2 needed 3 attempts)
+  fallback image from GHCR. Three full builds in an hour hit Docker Hub's pull limit (v2.6.2 needed 3 attempts) (#24)
 - Builds push to GHCR only; the publish jobs tag GHCR first, then copy the images from GHCR to Docker Hub. A
   Docker Hub limit now only fails the Docker Hub copy (rerun the publish job) - before, it failed the builds and
-  left GHCR without the tag too. The post-publish `imagetools inspect` only runs on GHCR
+  left GHCR without the tag too. The post-publish `imagetools inspect` only runs on GHCR (#24)
 - XLXd: YSF clients that don't pick a module now land on `G` (`YSF_AUTOLINK_MODULE`, was `A`) - XLX349's modules
-  were rearranged and `A` is now the parrot. `IMRS_DEFAULT_MODULE` stays `A`
+  were rearranged and `A` is now the parrot. `IMRS_DEFAULT_MODULE` stays `A` (#26)
 
 ### Fixed
 - ysfreflector: `docker logs` went silent after the first UTC midnight. The loop that follows the day's log file
   stops `tail` with `timeout` at midnight; `timeout` then exits non-zero and the inherited `set -e` ended the loop
-  instead of moving to the new day's file. The logs themselves were fine (`/var/log/ysfreflector`)
+  instead of moving to the new day's file. The logs themselves were fine (`/var/log/ysfreflector`) (#25)
 - nxdnreflector / p25reflector / ysfreflector: the daily old-log prune loop could stop the same way on a failed
-  `find`
+  `find` (#25)
 
 
 ## [2.6.2] - 2026-11-13
@@ -124,7 +127,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   optional `UBUNTU_MIRROR` build arg
 
 
-[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2...HEAD
+[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2-1...HEAD
+[2.6.2-1]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2...v2.6.2-1
 [2.6.2]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-4...v2.6.2
 [2.6.1-4]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-3...v2.6.1-4
 [2.6.1-3]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-2...v2.6.1-3
