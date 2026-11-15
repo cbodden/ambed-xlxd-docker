@@ -63,6 +63,8 @@ services:
       LASTHEARD_LIMIT: "39"
       PAGE_REFRESH: "10"
       IP_DISPLAY: "hide"
+      INFO_PAGE: "off"        # on: a menu page showing ./config/info.html
+      INFO_PAGE_TITLE: Info
       ## peers for the optional reflectors below : "<number> <host>:<port> <module>"
       NXDN_PEER_ENABLED: "${NXDN_REFLECTOR:-0}"
       NXDN_PEER: "31000 nxdnreflector:41400 E"
