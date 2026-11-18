@@ -10,10 +10,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+
+## [2.6.2-3] - 2026-11-18
+
 ### Fixed
 - XLXd: the Traffic statistics page no longer gains a phantom 4 GiB+ each way every time the container is
   re-created with a kept vnstat database - `vnstatd` now starts with `--sync`, so the new container's `eth0`
-  counters (back at 0) aren't read as a counter wrap
+  counters (back at 0) aren't read as a counter wrap (#30)
 
 
 ## [2.6.2-2] - 2026-11-15
@@ -140,7 +143,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   optional `UBUNTU_MIRROR` build arg
 
 
-[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2-2...HEAD
+[Unreleased]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2-3...HEAD
+[2.6.2-3]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2-2...v2.6.2-3
 [2.6.2-2]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2-1...v2.6.2-2
 [2.6.2-1]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.2...v2.6.2-1
 [2.6.2]: https://github.com/cbodden/ambed-xlxd-docker/compare/v2.6.1-4...v2.6.2
