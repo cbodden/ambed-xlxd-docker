@@ -10,6 +10,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- XLXd: the Traffic statistics page no longer gains a phantom 4 GiB+ each way every time the container is
+  re-created with a kept vnstat database - `vnstatd` now starts with `--sync`, so the new container's `eth0`
+  counters (back at 0) aren't read as a counter wrap
+
 
 ## [2.6.2-2] - 2026-11-15
 
