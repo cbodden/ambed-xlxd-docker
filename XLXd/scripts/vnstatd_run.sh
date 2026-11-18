@@ -10,4 +10,6 @@ fi
 ## first start on an empty database adds the container's interfaces (eth0 carries all reflector traffic)
 ## mount /var/lib/vnstat to keep the history across container re-creates
 mkdir -p /var/lib/vnstat
-exec vnstatd -n
+## --sync: a new container has a new eth0 whose counters start at 0, and without it vnstatd takes the drop from
+## the counters saved in the database for a 32-bit counter wrap - every re-create added a phantom 4 GiB+ each way
+exec vnstatd -n --sync
