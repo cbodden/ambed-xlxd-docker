@@ -42,39 +42,42 @@ Both images build from the same pinned upstream commit, `ARG XLXD_GIT_REF` in `A
 ## AMBEd hardware
 
 FTDI testing done with:
-- 2 x DVSI AMBE3000
+- 3 x DVSI AMBE3000
 - 1 x DVMEGA DVstick 33
 ```
-Config: LISTEN_IP=172.18.0.2 LISTEN_PORT=10100 ... USE_AGC=1 AGC_TARGET=-41 AGC_CLAMPING=9 ... USE_BANDPASSFILTER=1 STREAM_ACTIVITY_TIMEOUT=3 TUNING_LOG=1
+Config: LISTEN_IP=172.20.0.3 LISTEN_PORT=10100 DSCP_MARKING_ENABLE=1 DSCP_VALUE=46 DSTAR_TO_PCM=-10 DMR_TO_PCM=-1.5 M17_TO_PCM=-10.75 P25_TO_PCM=-3.75 PCM_TO_DSTAR=11.5 PCM_TO_DMR=0 PCM_TO_M17=5.25 PCM_TO_P25=0.75 USE_AGC=1 AGC_TARGET=-41 AGC_CLAMPING=9 AGC_ATTACK=150 AGC_HANG=1000 AGC_RECOVERY=2 AGC_RECOVERY_MIN=3 AGC_RECOVERY_MAX=20 AGC_GATE=-60 USE_BANDPASSFILTER=1 STREAM_ACTIVITY_TIMEOUT=3 TUNING_LOG=1
 Starting AMBEd 1.5.0
 
 Initializing vocodecs:
-Detected 3 USB-FTDI devices
+Detected 4 USB-FTDI devices
 
-Description : ThumbDV	 Serial : D30CDTY5
 Description : DVstick-33	 Serial : DOATDZAD
 Description : ThumbDV	 Serial : D30CBZH8
-
-Opening ThumbDV:D30CDTY5 device
-ReadDeviceVersion : AMBE3000R V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
+Description : ThumbDV	 Serial : D30CDTY5
+Description : ThumbDV	 Serial : D30B8WSY
 
 Opening ThumbDV:D30CBZH8 device
 ReadDeviceVersion : AMBE3000R V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
 
+Opening ThumbDV:D30CDTY5 device
+ReadDeviceVersion : AMBE3000R V120.E100.XXXX.C106.G514.R009.B0010411.C0020208
+
 Opening DVstick-33:DOATDZAD device
 Trying DF2ET-3003 soft reset
+
 DF2ET-3003 soft reset succeeded
 ReadDeviceVersion : AMBE3003F V120.E100.XXXX.C106.G514.R008.A0030608.C0020208
 
-Codec interfaces initialized successfully : 4 channels available
+Opening ThumbDV:D30B8WSY device
+ReadDeviceVersion : AMBE3000F V121.E100.XXXX.C110.G514.R014.A0030608.C0020208
 
-Software vocoders : 2 IMBE (P25), 2 Codec2 (M17)
+Codec interfaces initialized successfully : 6 channels available
+Software vocoders : 3 IMBE (P25), 3 Codec2 (M17)
 
 Initializing controller
+Max concurrent streams: 3 (from 6 vocoder channels)
 
-Max concurrent streams: 2 (from 4 vocoder channels)
-
-AMBEd started and listening on 172.18.0.2:10100
+AMBEd started and listening on 172.20.0.3:10100
 Voice packets marked as DSCP 46
 ```
 
